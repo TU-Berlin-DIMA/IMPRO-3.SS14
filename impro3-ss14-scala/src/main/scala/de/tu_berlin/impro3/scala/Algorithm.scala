@@ -71,10 +71,14 @@ object Algorithm {
 abstract class Algorithm(val arguments: Map[String, Object]) {
 
   // common parameters for all algorithms
-  val reader = Source.fromFile(arguments.get(Algorithm.KEY_INPUT).get.asInstanceOf[String]).bufferedReader()
+  val inputPath = arguments.get(Algorithm.KEY_INPUT).get.asInstanceOf[String]
+  val outputPath = arguments.get(Algorithm.KEY_OUTPUT).get.asInstanceOf[String]
+
   val dimensions = arguments.get(Algorithm.KEY_DIMENSIONS).get.asInstanceOf[Int]
 
-  val input = new Iterator[(List[Double], List[Double], String)] {
+  def iterator() = new Iterator[(List[Double], List[Double], String)] {
+    val reader = Source.fromFile(inputPath).bufferedReader()
+
     override def hasNext = reader.ready()
 
     override def next() = {

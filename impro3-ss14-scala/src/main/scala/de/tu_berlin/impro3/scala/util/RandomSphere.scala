@@ -92,7 +92,6 @@ class RandomSphere(args: Map[String, Object]) extends Algorithm(args) {
   // algorithm specific parameters
   val scale = arguments.get(RandomSphere.KEY_SCALE).get.asInstanceOf[Int]
   val cardinality = arguments.get(RandomSphere.KEY_CARDINALITY).get.asInstanceOf[Int]
-  val outputPath = arguments.get(Algorithm.KEY_OUTPUT).get.asInstanceOf[String]
 
   val random: Random = new Random(RandomSphere.SEED)
 

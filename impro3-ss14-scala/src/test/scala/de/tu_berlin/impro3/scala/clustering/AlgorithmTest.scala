@@ -12,9 +12,9 @@ object AlgorithmTest {
 
   val fileDummy = Paths.get(getClass.getResource("/dummy.txt").getFile).toAbsolutePath.toString
 
-  val Delta = 0.1
+  val Delta = 1.0
 
-  private def generateData(dimension: Int, scale: Int, cardinality: Int) = {
+  def generateData(dimension: Int, scale: Int, cardinality: Int) = {
     val fileName = s"${dimension}_${scale}_$cardinality.txt"
     val absPath = Paths.get(resourcesPath, fileName)
     if (!Files.exists(absPath)) {
@@ -29,20 +29,25 @@ object AlgorithmTest {
 @Test
 abstract class AlgorithmTest {
 
-  def getAlgorithm(args: Map[String, Object]): Algorithm
-
-  @Test
-  def test_3_100_10() = {
-    val inputFile = AlgorithmTest.generateData(3, 100, 10)
-    val outputFile = "/tmp/3_100_10_output.txt"
+  def test(dimensions: Int, scale: Int, cardinality: Int)(specificArgs: Map[String, Object]) = {
+    val inputFile = AlgorithmTest.generateData(dimensions, scale, cardinality)
+    val outputFile = s"/tmp/${dimensions}_${scale}_${cardinality}_output.txt"
     val builder = Map.newBuilder[String, Object]
     builder += Tuple2(Algorithm.KEY_INPUT, inputFile)
     builder += Tuple2(Algorithm.KEY_OUTPUT, outputFile)
-    builder += Tuple2(Algorithm.KEY_DIMENSIONS, new Integer(3))
+    builder += Tuple2(Algorithm.KEY_DIMENSIONS, new Integer(dimensions))
 
-    // get rid of algorithm specific arguments
-    builder += Tuple2(KMeans.KEY_K, new Integer(Math.pow(2.0, 3).toInt))
+    // algorithm specific arguments
+    for (arg <- specificArgs) builder += arg
 
+    println("TEST(" + dimensions + ", " + scale + ", " + cardinality + ") _________________________\n")
     getAlgorithm(builder.result()).run()
+
+    validate(dimensions, scale, cardinality, outputFile)
+    println()
   }
+
+  def getAlgorithm(args: Map[String, Object]): Algorithm
+
+  def validate(dimensions: Int, scale: Int, cardinality: Int, file: String)
 }

@@ -48,6 +48,29 @@ class Vector(val components: List[Double]) {
   override def toString = {
     val strBuilder = new StringBuilder()
     components.addString(strBuilder, ", ")
-    "Vector(" + strBuilder.result() + ")"
+    "(" + strBuilder.result() + ")"
+  }
+
+  def addString(b: StringBuilder, start: String, sep: String, end: String): StringBuilder = {
+    components.addString(b, start, sep, end)
+  }
+
+  def addString(b: StringBuilder, sep: String): StringBuilder = addString(b, "", sep, "")
+
+  def addString(b: StringBuilder): StringBuilder = addString(b, "")
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Vector]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Vector =>
+      (that canEqual this) &&
+        elements == that.elements &&
+        components == that.components
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(elements, components)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

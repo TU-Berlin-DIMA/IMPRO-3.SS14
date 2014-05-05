@@ -6,7 +6,7 @@ import _root_.de.tu_berlin.impro3.scala.core.Vector
 
 class Cluster(var center: KVector = null) {
 
-  val buffer = mutable.ListBuffer[Vector]()
+  private val buffer = mutable.ListBuffer[Vector]()
   var points: immutable.List[Vector] = null
 
   def updateCenter() {
