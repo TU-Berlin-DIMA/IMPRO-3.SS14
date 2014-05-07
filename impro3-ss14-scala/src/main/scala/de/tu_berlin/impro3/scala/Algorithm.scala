@@ -1,6 +1,7 @@
 package de.tu_berlin.impro3.scala
 
 import _root_.scala.io.Source
+import _root_.scala.collection.JavaConversions._
 import _root_.net.sourceforge.argparse4j.inf.Subparser
 
 object Algorithm {
@@ -61,8 +62,8 @@ object Algorithm {
      * @return
      */
     def instantiate(arguments: java.util.Map[String, Object]): Algorithm = {
-      val constructor = m.runtimeClass.getConstructor(classOf[java.util.Map[String, Object]])
-      constructor.newInstance(arguments).asInstanceOf[Algorithm]
+      val constructor = m.runtimeClass.getConstructor(classOf[Map[String, Object]])
+      constructor.newInstance(arguments.toMap).asInstanceOf[Algorithm]
     }
   }
 
