@@ -10,15 +10,13 @@ object AlgorithmTest {
 
   val resourcesPath = Paths.get(getClass.getResource("/dummy.txt").getFile).toAbsolutePath.getParent.toString
 
-  val fileDummy = Paths.get(getClass.getResource("/dummy.txt").getFile).toAbsolutePath.toString
-
   val Delta = 1.0
 
   def generateData(dimension: Int, scale: Int, cardinality: Int) = {
     val fileName = s"${dimension}_${scale}_$cardinality.txt"
     val absPath = Paths.get(resourcesPath, fileName)
     if (!Files.exists(absPath)) {
-      val generator = RandomSphere(dimension, scale, cardinality, fileDummy, absPath.toAbsolutePath.toString)
+      val generator = RandomSphere(dimension, scale, cardinality, absPath.toAbsolutePath.toString)
       generator.run()
     }
 
