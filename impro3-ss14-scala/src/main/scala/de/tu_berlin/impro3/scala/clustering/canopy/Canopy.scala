@@ -2,6 +2,12 @@ package de.tu_berlin.impro3.scala.clustering.canopy
 
 import _root_.net.sourceforge.argparse4j.inf.Subparser
 import _root_.de.tu_berlin.impro3.scala.Algorithm
+import de.tu_berlin.impro3.scala.clustering.kmeans.KVector
+import scala.collection.mutable
+import scala.collection.immutable.Stack
+import java.nio.file.{Files, Paths, Path}
+import java.nio.charset.Charset
+import java.io.{IOException, BufferedWriter}
 
 object Canopy {
 
@@ -48,5 +54,59 @@ class Canopy(args: Map[String, Object]) extends Algorithm(args) {
     throw new IllegalArgumentException("T1=" + T1 + " needs to be grater than T2=" + T2)
   }
 
-  def run(): Unit = {}
+  var points: Stack[KVector] = {
+    val p = Stack.newBuilder[KVector]
+    for (i <- iterator()) p += new KVector(i._1)
+    p.result()
+  }
+
+  val canopies = mutable.Map[KVector, mutable.Set[KVector]]()
+
+  def run(): Unit = {
+    while (points.size > 0){
+      val center = points.head
+      points = points.filter(x => x != center) // remove center from lsit
+      val pointsSet = mutable.Set[KVector]()
+
+      for(point <- points){
+        val dist = point.euclideanDistance(center)
+
+        if(dist <= T1){
+          pointsSet.add(point)
+
+          if(dist <= T2) {
+            points = points.filter(x => x != point)
+          }
+        }
+      }
+      canopies.put(center, pointsSet)
+    }
+    writeToFile()
+  }
+
+  // just debug output for now
+  def writeToFile() {
+    val file: Path = Paths.get(outputPath)
+    val charSet: Charset = Charset.forName("UTF-8")
+    val writer: BufferedWriter = Files.newBufferedWriter(file, charSet)
+
+    try {
+      val builder = new StringBuilder
+      for (canopy <- canopies) {
+        canopy._1.addString(builder, "", ", ", ", ")
+        for (point <- canopy._2) {
+          point.addString(builder, "(", ", ", ")")
+        }
+        builder.delete(builder.size - 2, builder.size)
+        writer.write(builder.result())
+        writer.newLine()
+        builder.clear()
+      }
+      writer.flush()
+    } catch {
+      case ex: IOException => println(ex)
+    } finally {
+      writer.close()
+    }
+  }
 }
