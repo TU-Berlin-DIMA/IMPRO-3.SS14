@@ -64,15 +64,15 @@ Each group should also prepare and update an algorithm presentation for their pa
 
 The current set of presentations can be found below:
 
-  1.  [Introduction](doc/slides/01_Introduction.pdf)
-  1.  [Scrum Introduction](doc/slides/02_Scrum_Introduction.pdf)
-  1.  [Scala Introduction](doc/slides/03_Scala_Introduction.pdf)
+  1.  [Introduction](doc/slides/01_Introduction.pdf?raw=true)
+  1.  [Scrum Introduction](doc/slides/02_Scrum_Introduction.pdf?raw=true)
+  1.  [Scala Introduction](doc/slides/03_Scala_Introduction.pdf?raw=true)
   1.  Algorithm Presentations
-      1.  [Logistic Regression](doc/slides/04_1_LogReg.pdf)
-      1.  [Random Forest](doc/slides/04_2_RandomForest.pdf)
-      1.  [Canopy Clustering](doc/slides/04_3_Canopy.pdf)
-      1.  [Hierarchical Agglomerative Clustering](doc/slides/04_4_HAC.pdf)
-      1.  [K-Means++](doc/slides/04_5_KMeansPlusPlus.pdf)
+      1.  [Logistic Regression](doc/slides/07_1_LogReg.pdf?raw=true)
+      1.  [Random Forest](doc/slides/07_2_RandomForest.pdf?raw=true)
+      1.  [Canopy Clustering](doc/slides/07_3_Canopy.pdf?raw=true)
+      1.  [Hierarchical Agglomerative Clustering](doc/slides/07_4_HAC.pdf?raw=true)
+      1.  [K-Means++](doc/slides/07_5_KMeansPlusPlus.pdf?raw=true)
 
 
 

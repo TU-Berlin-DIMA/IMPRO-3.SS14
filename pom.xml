@@ -31,11 +31,11 @@
 
         <!-- Scala -->
         <scala.version>2.10.4</scala.version>
-        <scala.tools.version>2.10.4</scala.tools.version>
+        <scala.tools.version>2.10</scala.tools.version>
 
         <!-- Testing -->
         <junit.version>4.11</junit.version>
-        <scalatest.version>2.1.2</scalatest.version>
+        <scalatest.version>2.1.6</scalatest.version>
         <specs2.version>2.3.10</specs2.version>
 
         <!-- Other dependencies -->
@@ -62,6 +62,12 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_${scala.tools.version}</artifactId>
+                <version>${scalatest.version}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -100,8 +106,6 @@
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>${scala-maven-plugin.version}</version>
                 <executions>
-                    <!-- Run scala compiler in the process-resources phase, so that dependencies on -->
-                    <!-- scala classes can be resolved later in the Java compile phase -->
                     <execution>
                         <id>scala-compile-first</id>
                         <phase>process-resources</phase>
@@ -109,12 +113,9 @@
                             <goal>compile</goal>
                         </goals>
                     </execution>
-
-                    <!-- Run scala compiler in the process-test-resources phase, so that dependencies on -->
-                    <!-- scala classes can be resolved later in the Java test-compile phase -->
                     <execution>
                         <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
+                        <phase>compile</phase>
                         <goals>
                             <goal>testCompile</goal>
                         </goals>

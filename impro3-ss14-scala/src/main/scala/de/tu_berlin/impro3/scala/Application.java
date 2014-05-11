@@ -16,7 +16,7 @@ public class Application {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
 
-        ArgumentParser parser = ArgumentParsers.newArgumentParser("Algorithm").defaultHelp(true).description("Use specified ML algorithm");
+        ArgumentParser parser = ArgumentParsers.newArgumentParser("impro3-ss14-scala").defaultHelp(true).description("Run a ML algorithm on Scala");
         Subparsers subparsers = parser.addSubparsers().help("algorithm name");
 
         HashMap<String, Algorithm.Config> algorithmConfigs = new HashMap<>();
