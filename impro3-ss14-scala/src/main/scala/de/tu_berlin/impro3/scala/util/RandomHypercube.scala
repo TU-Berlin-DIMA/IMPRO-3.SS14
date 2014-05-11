@@ -1,6 +1,5 @@
 package de.tu_berlin.impro3.scala.util
 
-import _root_.scala.collection.JavaConverters._
 import scala.util.Random
 import java.nio.file.{Paths, Files, Path}
 import java.nio.charset.Charset
@@ -11,62 +10,62 @@ import net.sourceforge.argparse4j.inf.Subparser
 object RandomHypercube {
 
   val SEED = 23454638945312L
-
   val Delimiter = ","
-
-  private def serializeCenter(point: List[Int], pad: Int) = {
-    val builder = new StringBuilder
-    for (p <- point) {
-      builder.append(p.toString.padTo(pad, ' ') + " , ")
-    }
-    builder.result()
-  }
-
-  private def serializePoint(point: List[Double], pad: Int) = {
-    val builder = new StringBuilder
-    for (p <- point) {
-      builder.append(p.toString.padTo(pad, ' ') + " , ")
-    }
-    builder.result()
-  }
 
   // argument names
   val KEY_SCALE = "S"
-
   val KEY_CARDINALITY = "C"
+
+  def apply(dimensions: Int, scale: Int, cardinality: Int, outputFile: String) = {
+    val builder = Map.newBuilder[String, Object]
+    builder += Tuple2(Algorithm.KEY_DIMENSIONS, dimensions.asInstanceOf[Object])
+    builder += Tuple2(Algorithm.KEY_OUTPUT, outputFile)
+    builder += Tuple2(RandomHypercube.KEY_SCALE, scale.asInstanceOf[Object])
+    builder += Tuple2(RandomHypercube.KEY_CARDINALITY, cardinality.asInstanceOf[Object])
+    new RandomSphere(builder.result())
+  }
 
   class Config extends Algorithm.Config[RandomHypercube] {
 
     // algorithm names
     override val CommandName = "cube-gen"
-    override val Name = "Random cube generator"
+    override val Name = "Random Cube Generator"
 
     override def setup(parser: Subparser) = {
-      // configure common command line arguments
-      super.setup(parser)
-      // configure algorithm specific command line arguments
+      // add arguments
+      parser.addArgument(Algorithm.KEY_OUTPUT)
+        .`type`[String](classOf[String])
+        .dest(Algorithm.KEY_OUTPUT)
+        .metavar("OUTPUT")
+        .help("output file ")
+
+      // add options (prefixed with --)
+      parser.addArgument(s"--${Algorithm.KEY_DIMENSIONS}")
+        .`type`[Integer](classOf[Integer])
+        .dest(Algorithm.KEY_DIMENSIONS)
+        .metavar("N")
+        .help("input dimensions (default 3)")
       parser.addArgument(s"-${RandomHypercube.KEY_SCALE}")
         .`type`[Integer](classOf[Integer])
-        .dest(RandomHypercube.KEY_SCALE)
+        .dest(RandomSphere.KEY_SCALE)
         .metavar("<scale>")
-        .help("distance between cluster centroids")
-
+        .help("length of the hypercube edge (default 100)")
       parser.addArgument(s"-${RandomHypercube.KEY_CARDINALITY}")
         .`type`[Integer](classOf[Integer])
         .dest(RandomHypercube.KEY_CARDINALITY)
         .metavar("<cardinality>")
-        .help("number of points per centroid")
+        .help("number of generated points (default 1000)")
 
-      val defaults = scala.collection.mutable.Map[String, AnyRef]()
-      defaults.put(Algorithm.KEY_DIMENSIONS, new Integer(3))
-      defaults.put(RandomSphere.KEY_SCALE, new Integer(100))
-      defaults.put(RandomSphere.KEY_CARDINALITY, new Integer(50))
-      parser.setDefaults(defaults.asJava)
+      // add defaults for options
+      parser.setDefault(Algorithm.KEY_DIMENSIONS, new Integer(3))
+      parser.setDefault(RandomHypercube.KEY_SCALE, new Integer(100))
+      parser.setDefault(RandomHypercube.KEY_CARDINALITY, new Integer(1000))
     }
   }
+
 }
 
-class RandomHypercube(args: Map[String, Object]) extends Algorithm(args) with Iterator[(List[Int], List[Double])] {
+class RandomHypercube(args: Map[String, Object]) extends Algorithm(args.updated(Algorithm.KEY_INPUT, args.get(Algorithm.KEY_OUTPUT).get.asInstanceOf[String])) with Iterator[(List[Int], List[Double])] {
 
   // algorithm specific parameters
   val scale = arguments.get(RandomHypercube.KEY_SCALE).get.asInstanceOf[Int]
@@ -109,9 +108,6 @@ class RandomHypercube(args: Map[String, Object]) extends Algorithm(args) with It
         writer.write(builder.result())
         writer.newLine()
         builder.clear()
-//        writer.write(RandomHypercube.serializePoint(point, Math.log10(scale).ceil.toInt + 20))
-//        writer.write(RandomHypercube.serializeCenter(center, Math.log10(scale).ceil.toInt + 2))
-//        writer.write('\n')
       }
       writer.flush()
     } catch {

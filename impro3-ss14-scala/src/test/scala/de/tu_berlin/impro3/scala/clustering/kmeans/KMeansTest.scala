@@ -43,18 +43,18 @@ class KMeansTest extends AlgorithmTest {
   }
 
   @Test
-  def test_3_100_10() = {
-    test(3, 100, 10)(Map((KMeans.KEY_K, new Integer(Math.pow(2.0, 3).toInt))))
+  def test_3_100_1000() = {
+    test(3, 100, 1000)(Map((KMeans.KEY_K, new Integer(Math.pow(2.0, 3).toInt))))
   }
 
   @Test
-  def test_4_100_10() = {
-    test(4, 100, 10)(Map((KMeans.KEY_K, new Integer(Math.pow(2.0, 4).toInt))))
+  def test_4_100_1000() = {
+    test(4, 100, 1000)(Map((KMeans.KEY_K, new Integer(Math.pow(2.0, 4).toInt))))
   }
 
   @Test
-  def test_5_100_10() = {
-    test(5, 100, 10)(Map((KMeans.KEY_K, new Integer(Math.pow(2.0, 5).toInt))))
+  def test_5_100_1000() = {
+    test(5, 100, 1000)(Map((KMeans.KEY_K, new Integer(Math.pow(2.0, 5).toInt))))
   }
 
   def validate(dimensions: Int, scale: Int, cardinality: Int, file: String) = KMeansTest.validate(dimensions, scale, cardinality, file)
