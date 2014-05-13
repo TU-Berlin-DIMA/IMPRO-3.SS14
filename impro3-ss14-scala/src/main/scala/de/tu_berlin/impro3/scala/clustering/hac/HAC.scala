@@ -5,7 +5,7 @@ import _root_.de.tu_berlin.impro3.scala.Algorithm
 
 object HAC {
 
-  class Config extends Algorithm.Config {
+  class Config extends Algorithm.Config[HAC] {
 
     // algorithm names
     override val CommandName = "hac"
@@ -23,5 +23,6 @@ object HAC {
 
 class HAC(args: Map[String, Object]) extends Algorithm(args) {
 
-  def run(): Unit = {}
+  def run(): Unit = {
+  }
 }
