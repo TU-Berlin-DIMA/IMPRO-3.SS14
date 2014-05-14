@@ -27,7 +27,7 @@ object HAC {
 
 class HAC(args: Map[String, Object]) extends Algorithm(args) {
 
-  val clusters: List[Cluster] = {
+  var clusters: List[Cluster] = {
     val p = List.newBuilder[Cluster]
     for (i <- 1 to 10) p += new Cluster(List(new DataPoint(i, i)))
     p.result()
@@ -46,17 +46,25 @@ class HAC(args: Map[String, Object]) extends Algorithm(args) {
     println("Starting HAC Algorithm")
     
     while (clusters.size > 1) {
-      println("prob endless")
+      var closest = compareThemAllFindSmallestDist(clusters)
+      
+      clusters = clusters.filter(_!=closest._1)
+      clusters = clusters.filter(_!=closest._2)
+      
+      val newCluster:Cluster = closest._1.addCluster(closest._2)
+      clusters = clusters ++ List(newCluster)
+      
+      println("amount of clusters: " + clusters.size)
     }
 //    for (i <- iterator()) println(i); //TODO: delete
  
   }
   
-  def compareThemAllFindSmallestDist(clusters1: List[Cluster], clusters2: List[Cluster]): (Cluster, Cluster) = {
-    var smallestDist = (clusters1(0), clusters2(0), clusters1(0).distanceTo(clusters2(0)))
+  def compareThemAllFindSmallestDist(clusters: List[Cluster]): (Cluster, Cluster) = {
+    var smallestDist = (clusters(0), clusters(1), clusters(0).distanceTo(clusters(1)))
     
-    for(c1 <- clusters1) {
-      for(c2 <- clusters2) {
+    for(c1 <- clusters) {
+      for(c2 <- clusters) {
         if(c1.distanceTo(c2) < smallestDist._3)
           smallestDist = (c1, c2, c1.distanceTo(c2))
         }
