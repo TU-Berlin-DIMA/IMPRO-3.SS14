@@ -40,6 +40,6 @@ class Cluster(val data: List[DataPoint]) {
   }
 
   override def toString = {
-    "Cluster[" + data + "] = "
+    "|++ Cluster[" + data + "] ++|"
   }
 }

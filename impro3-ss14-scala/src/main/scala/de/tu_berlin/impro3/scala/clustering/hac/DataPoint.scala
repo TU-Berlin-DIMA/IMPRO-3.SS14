@@ -8,5 +8,7 @@ import java.nio.charset.Charset
 import java.io.{IOException, BufferedWriter}
 
 class DataPoint(var x: Double, var y: Double) {
-  
+  override def toString = {
+    "x: " + x + " y: " + y
+  }
 }
