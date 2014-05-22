@@ -22,58 +22,6 @@ object HAC {
       parser.setDefault("dimensions", new Integer(2))
     }
   }
-
-}
-
-class HAC(args: Map[String, Object]) extends Algorithm(args) {
-  var writer: BufferedWriter = null
-  
-  var clusters: List[Cluster] = {
-    val c = List.newBuilder[Cluster]
-    for (i <- iterator()) c += new Cluster(List(new DataPoint(i._1(0), i._2(1))))
-    c.result()
-  }
-   
-  // var clusters: List[Cluster] = for(i <- iterator()) yield new Cluster(List(new DataPoint(i._1(0), i._2(1))))
-      
-  // just tests
-//  val testC: Cluster = new Cluster(List(new DataPoint(1,2), new DataPoint(3.5,7)))
-//  var testC2: Cluster = new Cluster(List(new DataPoint(1,1)))
-//  println("testavg: x: " + testC.getAvg().x + " , y: " + testC.getAvg().y)
-//  testC2 = testC.addCluster(testC2)
-//  println("testavg: x: " + testC2.getAvg().x + " , y: " + testC2.getAvg().y)
-//  println("distance 1,2: " + testC.distanceTo(testC2))
-//  println("distance 1,2: " + testC2.distanceTo(testC))
-  
-  val testCluster1: Cluster = new Cluster(List(new DataPoint(24,44), new DataPoint(26,41)))
-  val testCluster2: Cluster = new Cluster(List(new DataPoint(57,14), new DataPoint(56,18)))
-  val testCluster3: Cluster = new Cluster(List(new DataPoint(20,47), new DataPoint(21,49)))
-  val testCluster4: Cluster = new Cluster(List(new DataPoint(57.3,10), new DataPoint(56.4,21)))
-  
-  val testClusters: List[Cluster] = List(testCluster1, testCluster2, testCluster3, testCluster4)
-  
-  println(compareThemAllFindSmallestDist(testClusters))
-  
-  def run(): Unit = {
-    println("Starting HAC Algorithm")
-    
-    println("before while amount of clusters: " + clusters.size)
-    
-    startWrite()
-    while (clusters.size > 1) {
-      var closest = compareThemAllFindSmallestDist(clusters)
-      
-      clusters = clusters.filter(_!=closest._1)
-      clusters = clusters.filter(_!=closest._2)
-      
-      val newCluster:Cluster = closest._1.addCluster(closest._2)
-      clusters = clusters ++ List(newCluster)
-      
-      println("amount of clusters: " + clusters.size)
-      writeClustersToFile()
-    }
-    stopWrite()
-  }
   
   def compareThemAllFindSmallestDist(clusters: List[Cluster]): (Cluster, Cluster) = {
     var smallestDist = (clusters(0), clusters(1), clusters(0).distanceTo(clusters(1)))
@@ -86,6 +34,46 @@ class HAC(args: Map[String, Object]) extends Algorithm(args) {
     }
     
     (smallestDist._1, smallestDist._2)
+  }
+
+}
+
+class HAC(args: Map[String, Object]) extends Algorithm(args) {
+  var writer: BufferedWriter = null
+  
+  var clusters: List[Cluster] = {
+    val c = List.newBuilder[Cluster]
+    for (i <- iterator()) c += new Cluster(List(new DataPoint(i._1(0), i._2(1))))
+    c.result()
+  }
+   
+  val testCluster1: Cluster = new Cluster(List(new DataPoint(24,44), new DataPoint(26,41)))
+  val testCluster2: Cluster = new Cluster(List(new DataPoint(57,14), new DataPoint(56,18)))
+  val testCluster3: Cluster = new Cluster(List(new DataPoint(20,47), new DataPoint(21,49)))
+  val testCluster4: Cluster = new Cluster(List(new DataPoint(57.3,10), new DataPoint(56.4,21)))
+  
+  val testClusters: List[Cluster] = List(testCluster1, testCluster2, testCluster3, testCluster4)
+  println(testClusters)
+  
+  def run(): Unit = {
+    println("Starting HAC Algorithm")
+    
+    println("before while amount of clusters: " + clusters.size)
+    
+    startWrite()
+    while (clusters.size > 1) {
+      var closest = HAC.compareThemAllFindSmallestDist(clusters)
+      
+      clusters = clusters.filter(_!=closest._1)
+      clusters = clusters.filter(_!=closest._2)
+      
+      val newCluster:Cluster = closest._1.addCluster(closest._2)
+      clusters = clusters ++ List(newCluster)
+      
+      println("amount of clusters: " + clusters.size)
+      writeClustersToFile()
+    }
+    stopWrite()
   }
   
   def startWrite() {
