@@ -23,6 +23,7 @@
         <maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
         <maven-source-plugin.version>2.1.2</maven-source-plugin.version>
         <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
+        <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
         <scala-maven-plugin.version>3.1.6</scala-maven-plugin.version>
         <build-helper-maven-plugin.version>1.7</build-helper-maven-plugin.version>
 
@@ -32,6 +33,9 @@
         <!-- Scala -->
         <scala.version>2.10.4</scala.version>
         <scala.tools.version>2.10</scala.tools.version>
+
+        <!-- Stratosphere -->
+        <stratosphere.version>0.5-rc1</stratosphere.version>
 
         <!-- Testing -->
         <junit.version>4.11</junit.version>
@@ -69,6 +73,23 @@
                 <artifactId>scalatest_${scala.tools.version}</artifactId>
                 <version>${scalatest.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <!-- Stratosphere -->
+            <dependency>
+                <groupId>eu.stratosphere</groupId>
+                <artifactId>stratosphere-clients</artifactId>
+                <version>${stratosphere.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.stratosphere</groupId>
+                <artifactId>stratosphere-scala</artifactId>
+                <version>${stratosphere.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.stratosphere</groupId>
+                <artifactId>stratosphere-java</artifactId>
+                <version>${stratosphere.version}</version>
             </dependency>
 
             <!-- Arguments parsing -->
@@ -157,6 +178,7 @@
 
     <modules>
         <module>impro3-ss14-scala</module>
+        <module>impro3-ss14-stratosphere</module>
     </modules>
 
 </project>
