@@ -11,10 +11,20 @@
 
     <artifactId>impro3-ss14-stratosphere</artifactId>
     <name>IMPRO-3.SS14 (Stratosphere)</name>
+    
+    <repositories>
+	  <repository>
+	    <id>snapshots-repo</id>
+	    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	    <releases><enabled>false</enabled></releases>
+	    <snapshots><enabled>true</enabled></snapshots>
+	  </repository>
+	</repositories>
+    
 
     <dependencies>
         <!-- Stratosphere -->
-        <dependency>
+        <!--  <dependency>
             <groupId>eu.stratosphere</groupId>
             <artifactId>stratosphere-clients</artifactId>
         </dependency>
@@ -25,7 +35,25 @@
         <dependency>
             <groupId>eu.stratosphere</groupId>
             <artifactId>stratosphere-java</artifactId>
-        </dependency>
+        </dependency>-->
+        
+        <dependency>
+		  <groupId>eu.stratosphere</groupId>
+		  <artifactId>stratosphere-clients</artifactId>
+		  <version>0.5.1-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>eu.stratosphere</groupId>
+		  <artifactId>stratosphere-java</artifactId>
+		  <version>0.5.1-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>eu.stratosphere</groupId>
+		  <artifactId>stratosphere-test-utils</artifactId>
+		  <version>0.5.1-SNAPSHOT</version>
+		</dependency>
 
         <!-- Testing -->
         <dependency>
@@ -47,6 +75,11 @@
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
+        </dependency>
+        <dependency>
+        	<groupId>org.apache.commons</groupId>
+        	<artifactId>commons-math3</artifactId>
+        	<version>3.3</version>
         </dependency>
     </dependencies>
 
