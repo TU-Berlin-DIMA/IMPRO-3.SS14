@@ -35,7 +35,7 @@
         <scala.tools.version>2.10</scala.tools.version>
 
         <!-- Stratosphere -->
-        <stratosphere.version>0.5-rc1</stratosphere.version>
+        <stratosphere.version>0.5.1</stratosphere.version>
 
         <!-- Testing -->
         <junit.version>4.11</junit.version>
@@ -89,6 +89,11 @@
             <dependency>
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-java</artifactId>
+                <version>${stratosphere.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.stratosphere</groupId>
+                <artifactId>stratosphere-test-utils</artifactId>
                 <version>${stratosphere.version}</version>
             </dependency>
 
