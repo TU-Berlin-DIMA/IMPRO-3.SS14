@@ -3,11 +3,10 @@ package de.tu_berlin.impro3.scala.clustering.kmeansplusplus
 import scala.io.Source
 import de.tu_berlin.impro3.scala.core.Vector
 import de.tu_berlin.impro3.scala.Algorithm
-import de.tu_berlin.impro3.scala.clustering.AlgorithmTest
 import org.junit.Assert._
 import org.junit.Test
 import de.tu_berlin.impro3.scala.clustering.kmeanspp.KMeansPlusPlus
-
+import de.tu_berlin.impro3.scala.common.AlgorithmTest
 
 
 object KMeansPlusPlusTest {

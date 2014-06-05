@@ -1,7 +1,6 @@
-package de.tu_berlin.impro3.scala.clustering
+package de.tu_berlin.impro3.scala.common
 
 import _root_.de.tu_berlin.impro3.scala.Algorithm
-import _root_.de.tu_berlin.impro3.scala.clustering.kmeans.KMeans
 import _root_.de.tu_berlin.impro3.scala.util.RandomSphere
 import org.junit.Test
 import java.nio.file.{Files, Paths}

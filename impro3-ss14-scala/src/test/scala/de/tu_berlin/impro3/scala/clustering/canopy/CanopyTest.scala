@@ -5,7 +5,7 @@ import org.junit.Test
 import scala.io.Source
 import de.tu_berlin.impro3.scala.core.Vector
 import de.tu_berlin.impro3.scala.Algorithm
-import de.tu_berlin.impro3.scala.clustering.AlgorithmTest
+import de.tu_berlin.impro3.scala.common.AlgorithmTest
 
 object CanopyTest{
   def validate(dimensions: Int, scale: Int, cardinality: Int, file: String) {

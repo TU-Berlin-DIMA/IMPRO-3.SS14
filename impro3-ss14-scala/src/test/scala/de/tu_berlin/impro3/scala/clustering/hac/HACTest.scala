@@ -1,7 +1,6 @@
 package de.tu_berlin.impro3.scala.clustering.hac
 
 import de.tu_berlin.impro3.scala.clustering.hac._
-import de.tu_berlin.impro3.scala.clustering.AlgorithmTest
 import de.tu_berlin.impro3.scala.core.Vector
 import org.junit.Test
 import org.junit.Assert._
@@ -11,6 +10,7 @@ import scala.io.Source
 import java.nio.file.{Paths, Files, Path}
 import java.nio.charset.Charset
 import java.io.{IOException, BufferedWriter}
+import de.tu_berlin.impro3.scala.common.AlgorithmTest
 
 object HACTest {
   def validate(dimensions: Int, scale: Int, cardinality: Int, file: String) {
