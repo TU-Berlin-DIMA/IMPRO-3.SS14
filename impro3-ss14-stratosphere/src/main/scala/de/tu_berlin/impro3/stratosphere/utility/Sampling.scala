@@ -10,7 +10,11 @@ import _root_.eu.stratosphere.api.scala.operators._
 
 class Sampling extends Program with ProgramDescription with Serializable {
 
+  val SEED: Long = 123456;
+
   def getScalaPlan(higgsInput: String, higgsOutput: String, size: Double) = {
+
+    Random.setSeed(SEED)
 
     val higgsData = TextFile(higgsInput).filter( x => Random.nextDouble < size )
 
