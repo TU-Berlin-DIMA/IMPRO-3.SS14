@@ -56,7 +56,9 @@ class Canopy(args: Map[String, Object]) extends Algorithm(args) {
 
   var points: Stack[KVector] = {
     val p = Stack.newBuilder[KVector]
-    for (i <- iterator()) p += new KVector(i._1)
+    for (i <- iterator()) {
+      p += new KVector(i._1)
+    }
     p.result()
   }
 
@@ -65,7 +67,7 @@ class Canopy(args: Map[String, Object]) extends Algorithm(args) {
   def run(): Unit = {
     while (points.size > 0){
       val center = points.head
-      points = points.filter(x => x != center) // remove center from lsit
+      points = points.filter(x => x != center) // remove center from list
       val pointsSet = mutable.Set[KVector]()
 
       for(point <- points){
@@ -84,7 +86,7 @@ class Canopy(args: Map[String, Object]) extends Algorithm(args) {
     writeToFile()
   }
 
-  // just debug output for now
+  // write output to csv file
   def writeToFile() {
     val file: Path = Paths.get(outputPath)
     val charSet: Charset = Charset.forName("UTF-8")
@@ -93,11 +95,10 @@ class Canopy(args: Map[String, Object]) extends Algorithm(args) {
     try {
       val builder = new StringBuilder
       for (canopy <- canopies) {
-        canopy._1.addString(builder, "", ", ", ", ")
+        canopy._1.addString(builder, "", ", ", "")     // centroid: a,b
         for (point <- canopy._2) {
-          point.addString(builder, "(", ", ", ")")
+          point.addString(builder, ", ", ", ", "")     // canopy points: x_1,y_1,x_2,y_2 ...
         }
-        builder.delete(builder.size - 2, builder.size)
         writer.write(builder.result())
         writer.newLine()
         builder.clear()

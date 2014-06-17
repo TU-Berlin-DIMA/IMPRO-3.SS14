@@ -1,6 +1,5 @@
 package de.tu_berlin.impro3.scala.clustering.kmeans
 
-import de.tu_berlin.impro3.scala.clustering.AlgorithmTest
 import de.tu_berlin.impro3.scala.core.Vector
 import org.junit.Test
 import org.junit.Assert._
@@ -8,6 +7,7 @@ import org.junit.Test
 import org.junit.Before
 import de.tu_berlin.impro3.scala.Algorithm
 import scala.io.Source
+import de.tu_berlin.impro3.scala.common.AlgorithmTest
 
 object KMeansTest {
   def validate(dimensions: Int, scale: Int, cardinality: Int, file: String) {
