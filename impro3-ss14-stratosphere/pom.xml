@@ -117,7 +117,7 @@
                             <archive>
                                 <manifestEntries>
                                     <program-class>
-                                        de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.KMeansPlusPlus
+                                        de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.KMeansppBagOfWords
                                     </program-class>
                                 </manifestEntries>
                             </archive>

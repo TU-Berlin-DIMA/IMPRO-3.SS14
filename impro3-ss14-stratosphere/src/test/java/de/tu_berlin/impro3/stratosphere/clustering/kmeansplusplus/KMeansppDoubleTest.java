@@ -1,7 +1,6 @@
 package de.tu_berlin.impro3.stratosphere.clustering.kmeansplusplus;
 
-import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.KMeansppGeneric;
-import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.util.GenericFunctions;
+import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.KMeansppDouble;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import org.junit.After;
 import org.junit.Assert;
@@ -13,9 +12,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by qml_moon on 28/05/14.
- */
 public class KMeansppDoubleTest {
 
 	String data = "1|-8.35|-45.34|\n" +
@@ -126,30 +122,6 @@ public class KMeansppDoubleTest {
 	String inputPath = "/tmp/kmeanspp_input";
 	String outputPath = "/tmp/kmeanspp_output";
 
-	/**
-	 * A simple two-dimensional point.
-	 */
-	public static class DoubleFunction implements GenericFunctions<Double> {
-
-		public DoubleFunction(){
-		}
-
-		@Override
-		public Tuple2<Double, Double> add(Tuple2<Double, Double> in1, Tuple2<Double, Double> in2) {
-			return new Tuple2<Double, Double>(in1.f0 + in2.f0, in1.f1 + in2.f1);
-		}
-
-		@Override
-		public Tuple2<Double, Double> div(Tuple2<Double, Double> in1, long val) {
-			return new Tuple2<Double, Double>(in1.f0 / val, in1.f1 / val);
-		}
-
-		@Override
-		public double distance(Tuple2<Double, Double> in1, Tuple2<Double, Double> in2) {
-			return Math.sqrt((in1.f0 - in2.f0)*(in1.f0 - in2.f0) + (in1.f1 - in2.f1)*(in1.f1 - in2.f1));
-		}
-	}
-
 	@Before
 	public void generateTestFile() throws Exception {
 		PrintWriter f = new PrintWriter(inputPath);
@@ -158,9 +130,8 @@ public class KMeansppDoubleTest {
 	}
 	@Test
 	public void kmeansDoubleTest() throws Exception {
-		String [] args = new String[]{"1", "file://" + inputPath, "file://" + outputPath, "100", "4", "100"};
-		KMeansppGeneric<Double> kmp = new KMeansppGeneric<Double>(args);
-		kmp.run(Double.class, new DoubleFunction());
+		String [] args = new String[]{"1", "file://" + inputPath, "file://" + outputPath, "4", "100"};
+		KMeansppDouble.main(args);
 	}
 
 	@After

@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.util.GenericFunctions1D;
+import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.util.GenericFunctions;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
@@ -40,15 +40,6 @@ public class KMeansppBagOfWords {
 			return result;
 		}
 	}
-	
-	public static class IntegerWrapper implements Serializable {
-		private static final long serialVersionUID = 4295962833378918591L;
-		int value;
-		
-		public IntegerWrapper(int v) {
-			value = v;
-		}
-	}
 
 	public static final class RecordToDocConverter extends GroupReduceFunction<Tuple3<Integer, Integer, Double>, Document> {
 
@@ -71,7 +62,7 @@ public class KMeansppBagOfWords {
 		}
 	}
 
-	public static class MyFunctions implements GenericFunctions1D<Document> {
+	public static class MyFunctions implements GenericFunctions<Document> {
 
 		private static final long serialVersionUID = 5510454279473390773L;
 		
@@ -139,21 +130,20 @@ public class KMeansppBagOfWords {
 	}
 
 	public static String getDescription() {
-		return "Parameters: <numSubTasks> <inputPath> <outputDirectory> <numClusters>  <maxIterations> <convergeCriteria>";
+		return "Parameters: <numSubTasks> <inputPath> <outputDirectory> <numClusters>  <maxIterations>";
 	}
 	
 
 	public static void main(String[] args) throws Exception {
 		
-		if(args.length < 6) {
+		if(args.length < 5) {
 			System.out.println(getDescription());
 			return;
 		}
 		int dop = Integer.parseInt(args[0]);
 		int k = Integer.parseInt(args[3]);
 		int itrs = Integer.parseInt(args[4]);
-		double epsilon = Double.parseDouble(args[5]);
-		KMeansppGeneric1D<Document> kmp = new KMeansppGeneric1D<Document>(dop, args[2], k, itrs, epsilon);
-		kmp.run(Document.class, new MyFunctions(args[1]));
+		KMeansppGeneric<Document> kmp = new KMeansppGeneric<Document>(dop, args[2], k, itrs);
+		kmp.run(new MyFunctions(args[1]));
 	}
 }
