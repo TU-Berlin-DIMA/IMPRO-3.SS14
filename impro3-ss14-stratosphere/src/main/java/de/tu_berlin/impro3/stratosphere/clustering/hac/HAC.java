@@ -13,13 +13,10 @@ import eu.stratosphere.util.Collector;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.util.*;
 
 @SuppressWarnings("serial")
-public class HAC_Flink_Java {
+public class HAC {
 
 	public static enum LinkageMode { SINGLE, COMPLETE }
 
@@ -123,9 +120,9 @@ public class HAC_Flink_Java {
 		@Override
 		public ClusterPair reduce(ClusterPair value1, ClusterPair value2) throws Exception {
 			if (value1.getSimilarity().doubleValue() < value2.getSimilarity().doubleValue()) {
-				return value1.clone();
+				return value1;
 			}
-			return value2.clone();
+			return value2;
 		}
 	}
 
@@ -137,9 +134,9 @@ public class HAC_Flink_Java {
 		@Override
 		public ClusterPair reduce(ClusterPair value1, ClusterPair value2) throws Exception {
 			if (value1.getSimilarity().doubleValue() > value2.getSimilarity().doubleValue()) {
-				return value1.clone();
+				return value1;
 			}
-			return value2.clone();
+			return value2;
 		}
 	}
 
@@ -182,7 +179,10 @@ public class HAC_Flink_Java {
 				out.collect(value);
 			} else if (value.getCluster1().intValue() > value.getCluster2().intValue()) {
 				// swap cluster ID's:
-				out.collect(new ClusterPair(value.getSimilarity(), value.getCluster2(), value.getCluster1()));
+				Integer tmp = value.getCluster2();
+				value.setCluster2(value.getCluster1());
+				value.setCluster1(tmp);
+				out.collect(value);
 			}
 		}
 	}
@@ -194,12 +194,12 @@ public class HAC_Flink_Java {
     public static class ClusterHistory extends Tuple2<Integer, String> {
         public ClusterHistory() {
             f0 = 0;
-            f1 = new String("");
+            f1 = "";
         }
 
         public ClusterHistory(Integer oldid, Integer newid) {
             f0 = 0;
-            f1 = new String("[" + oldid + "; " + newid + "]");
+            f1 = "[" + oldid + "; " + newid + "]";
         }
 
         public void add(ClusterHistory newend) {
@@ -208,9 +208,7 @@ public class HAC_Flink_Java {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append(f1);
-            return builder.toString();
+            return f1;
         }
     }
 
@@ -258,7 +256,7 @@ public class HAC_Flink_Java {
 		}
 	}
 
-    public static void clusterDocuments(ExecutionEnvironment env, String linkage, DataSet<ClusterPair> similarities, String outputfile) {
+    public static void clusterDocuments(ExecutionEnvironment env, String linkage, DataSet<ClusterPair> similarities, String outputfile, int iterations_max) {
         		/*
 		Initializing the ClusterHistory
 		 */
@@ -270,7 +268,7 @@ public class HAC_Flink_Java {
 		/*
 		Start of the iteration.
 		 */
-        DeltaIteration<ClusterHistory, ClusterPair> iteration = history.iterateDelta(similarities, 10000, 0);
+        DeltaIteration<ClusterHistory, ClusterPair> iteration = history.iterateDelta(similarities, iterations_max, 0);
 
 		/*
 		Differentiate between the linkage modes. In SINGLE link mode, the highest similarity symbolizes the shorted "distance" between two clusters.
@@ -285,7 +283,7 @@ public class HAC_Flink_Java {
             throw new RuntimeException("Illegal Linkage Option.");
         }
 
-        DataSet<ClusterPair> linkageSet = iteration.getWorkset().reduce(linkageReducer);
+        DataSet<ClusterPair> linkageSet = iteration.getWorkset().reduce(linkageReducer).name("LinkageReducer");
 
         // just for printing / debug purposes
         /*
@@ -295,21 +293,19 @@ public class HAC_Flink_Java {
                 System.out.println("value = " + value);
                 return value;
             }
-        });
-	    */
+        });*/
 
         //update the ClusterHistory
-        DataSet<ClusterHistory> update = linkageSet.map(new HistoryUpdater());
+        DataSet<ClusterHistory> update = linkageSet.map(new HistoryUpdater()).name("HistoryUpdater");
 
         //join History
-        DataSet<ClusterHistory> delta = iteration.getSolutionSet().join(update).where(0).equalTo(0).with(new HistoryJoiner());
+        DataSet<ClusterHistory> delta = iteration.getSolutionSet().join(update).where(0).equalTo(0).with(new HistoryJoiner()).name("HistoryJoiner");
 
 		/*
 		The ClusterPairs are updated and duplicate ClusterPairs are removed.
 		 */
         DataSet<ClusterPair> feedback = iteration.getWorkset()
-                .flatMap(new ClusterPairUpdater()).withBroadcastSet(linkageSet, "mergedPair")
-                .groupBy(1, 2).reduce(linkageReducer);
+                .flatMap(new ClusterPairUpdater()).name("ClusterPairUpdater").withBroadcastSet(linkageSet, "mergedPair");
 
         DataSet<ClusterHistory> result = iteration.closeWith(delta, feedback);
 
@@ -325,13 +321,14 @@ public class HAC_Flink_Java {
 	public static void main(String[] args) {
 		String filePath = null;
 		try {
-			filePath = new File("./impro3-ss14-stratosphere/src/main/resources/datasets/clustering/bag-of-words/docword.kos.txt.mini").getCanonicalPath();
+			filePath = new File("./impro3-ss14-stratosphere/src/main/resources/datasets/clustering/bag-of-words/docword.kos.txt").getCanonicalPath();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		String linkage = "COMPLETE";
 		String outputPath = "/tmp/hac";
 		boolean prettyPrint = false;
+		int iterations_max = Integer.MAX_VALUE;
 
 		// optional arguments:
 		if (args.length > 0) {
@@ -347,8 +344,12 @@ public class HAC_Flink_Java {
 			System.out.println("Output File: " + outputPath);
 		}
 		if (args.length > 3) {
-			prettyPrint = Boolean.parseBoolean(args[2]);
+			prettyPrint = Boolean.parseBoolean(args[3]);
 			System.out.println("PrettyPrint: " + prettyPrint);
+		}
+		if (args.length > 4) {
+			iterations_max = Integer.parseInt(args[4]);
+			System.out.println("Iterations: " + iterations_max);
 		}
 
 		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
@@ -356,7 +357,23 @@ public class HAC_Flink_Java {
 		/*
 		Initial points are read from the file. Layout: docID termID termCount (separated by space).
 		 */
-		DataSet<DataPoint> points = env.readCsvFile(filePath).fieldDelimiter(' ').tupleType(DataPoint.class);
+		//DataSet<DataPoint> points = env.readCsvFile(filePath).fieldDelimiter(' ').tupleType(DataPoint.class);
+        DataSet<DataPoint> points = env.readTextFile(filePath).flatMap(new FlatMapFunction<String, DataPoint>() {
+                                                                           @Override
+                                                                           public void flatMap(String value, Collector<DataPoint> out) throws Exception {
+                                                                               StringTokenizer tokenizer = new StringTokenizer(value, " ");
+
+                                                                               if(tokenizer.countTokens() < 3)
+                                                                                   return;
+
+                                                                               ArrayList<Integer> tokens = new ArrayList<Integer>();
+                                                                               while(tokenizer.hasMoreTokens()) {
+                                                                                    tokens.add(Integer.valueOf((String)tokenizer.nextElement()));
+                                                                               }
+
+                                                                               out.collect(new DataPoint(tokens.get(0), tokens.get(1), tokens.get(2)));
+                                                                           }
+                                                                       }).name("DataPointsInit");
 
         DataSet<Document> documents = points.groupBy(0).reduceGroup(new ClusterAssignReducer());
 
@@ -365,10 +382,12 @@ public class HAC_Flink_Java {
 		By grouping on the two document ids, we get the multiplied count of all terms that appear in both documents. By computing the sum of the multiplied counts we
 		get our similarity measure. This way, only terms that are present in both documents are considered and terms that appear often in both gain additional weight.
 		 */
-		DataSet<ClusterPair> similarities = points.join(points).where(1).equalTo(1).flatMap(new SimilarityMap()).groupBy(1,2).aggregate(Aggregations.SUM, 0);
-        clusterDocuments(env, linkage, similarities, outputPath);
+		DataSet<ClusterPair> similarities = points.join(points).where(1).equalTo(1).name("TermIDJoin").flatMap(new SimilarityMap()).name("SimilarityMap").
+                groupBy(1,2).aggregate(Aggregations.SUM, 0).name("SimilarityAggregration");
+        clusterDocuments(env, linkage, similarities, outputPath, iterations_max);
         try {
             env.execute();
+            //System.out.println(env.getExecutionPlan());
         } catch (Exception e) {
             e.printStackTrace();
         }
