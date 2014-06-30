@@ -13,18 +13,6 @@ import java.util.Scanner;
 
 public class HAC_FlinkJavaTest {
 
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
-
-    private void testCompleteLinkage(ArrayList<HAC_Flink_Java.ClusterPair> sim) throws Exception {
-        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-
-        DataSet<HAC_Flink_Java.ClusterPair> similarities = env.fromCollection(sim);
-        HAC_Flink_Java.clusterDocuments(env, "COMPLETE", similarities, testFolder.getRoot() + "/completetest");
-
-        env.execute();
-    }
-
     @Test
     public void testclusterDocuments() throws Exception {
 	    TemporaryFolder testFolder = new TemporaryFolder();

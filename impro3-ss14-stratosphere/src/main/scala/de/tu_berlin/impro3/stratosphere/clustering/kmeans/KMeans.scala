@@ -27,8 +27,7 @@ class KMeans extends Program with ProgramDescription with Serializable {
 
   def getScalaPlan(dop: Int, dataPointInput: String, clusterInput: String, clusterOutput: String, numIterations: Int) = {
 
-    val dataPoints = DataSource(dataPointInput, CsvInputFormat[(Double, Double)]("\n", ' '))
-      .map { case (x, y) => Point(x, y)}
+    val dataPoints = DataSource(dataPointInput, CsvInputFormat[(Double, Double)]("\n", ' ')).map { case (x, y) => Point(x, y)}
 
     val clusterPoints = DataSource(clusterInput, CsvInputFormat[(Int, Double, Double)]("\n", ' '))
       .map { case (id, x, y) => (id, Point(x, y))}

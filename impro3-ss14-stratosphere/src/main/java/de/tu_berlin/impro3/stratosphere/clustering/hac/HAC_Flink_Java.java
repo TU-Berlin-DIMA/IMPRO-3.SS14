@@ -258,7 +258,7 @@ public class HAC_Flink_Java {
 		}
 	}
 
-    public static void clusterDocuments(ExecutionEnvironment env, String linkage, DataSet<ClusterPair> similarities, String outputfile) {
+    public static void clusterDocuments(ExecutionEnvironment env, String linkage, DataSet<ClusterPair> similarities, String outputfile, int iterations_max) {
         		/*
 		Initializing the ClusterHistory
 		 */
@@ -270,7 +270,7 @@ public class HAC_Flink_Java {
 		/*
 		Start of the iteration.
 		 */
-        DeltaIteration<ClusterHistory, ClusterPair> iteration = history.iterateDelta(similarities, 10000, 0);
+        DeltaIteration<ClusterHistory, ClusterPair> iteration = history.iterateDelta(similarities, iterations_max, 0);
 
 		/*
 		Differentiate between the linkage modes. In SINGLE link mode, the highest similarity symbolizes the shorted "distance" between two clusters.
@@ -332,6 +332,7 @@ public class HAC_Flink_Java {
 		String linkage = "COMPLETE";
 		String outputPath = "/tmp/hac";
 		boolean prettyPrint = false;
+		int iterations_max = Integer.MAX_VALUE;
 
 		// optional arguments:
 		if (args.length > 0) {
@@ -347,8 +348,12 @@ public class HAC_Flink_Java {
 			System.out.println("Output File: " + outputPath);
 		}
 		if (args.length > 3) {
-			prettyPrint = Boolean.parseBoolean(args[2]);
+			prettyPrint = Boolean.parseBoolean(args[3]);
 			System.out.println("PrettyPrint: " + prettyPrint);
+		}
+		if (args.length > 4) {
+			iterations_max = Integer.parseInt(args[4]);
+			System.out.println("Iterations: " + iterations_max);
 		}
 
 		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
@@ -366,7 +371,7 @@ public class HAC_Flink_Java {
 		get our similarity measure. This way, only terms that are present in both documents are considered and terms that appear often in both gain additional weight.
 		 */
 		DataSet<ClusterPair> similarities = points.join(points).where(1).equalTo(1).flatMap(new SimilarityMap()).groupBy(1,2).aggregate(Aggregations.SUM, 0);
-        clusterDocuments(env, linkage, similarities, outputPath);
+        clusterDocuments(env, linkage, similarities, outputPath, iterations_max);
         try {
             env.execute();
         } catch (Exception e) {
