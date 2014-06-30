@@ -11,7 +11,7 @@
 
     <artifactId>impro3-ss14-stratosphere</artifactId>
     <name>IMPRO-3.SS14 (Stratosphere)</name>
-    
+
     <repositories>
 	  <repository>
 	    <id>snapshots-repo</id>
@@ -20,10 +20,9 @@
 	    <snapshots><enabled>true</enabled></snapshots>
 	  </repository>
 	</repositories>
-    
 
     <dependencies>
-        <!-- Stratosphere -->
+    <!-- Stratosphere -->
         <dependency>
 		  <groupId>eu.stratosphere</groupId>
 		  <artifactId>stratosphere-clients</artifactId>
@@ -35,6 +34,7 @@
         <dependency>
             <groupId>eu.stratosphere</groupId>
             <artifactId>stratosphere-scala</artifactId>
+            <version>0.6-SNAPSHOT</version>
         </dependency>
 		<dependency>
 		  <groupId>eu.stratosphere</groupId>
