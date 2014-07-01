@@ -10,6 +10,7 @@ import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.IterativeDataSet;
 import eu.stratosphere.api.java.aggregation.Aggregations;
+import eu.stratosphere.api.java.functions.FilterFunction;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
 import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.functions.ReduceFunction;
@@ -19,9 +20,19 @@ import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.util.Collector;
 
+/**
+ * Generic KMeans++ implementation.
+ * @param <T>
+ *           User defined data type.
+ */
 public class KMeansppGeneric<T> implements Serializable {
 
 	private static final long serialVersionUID = 3203582521287201233L;
+
+	private String outputPath = null;
+	private int dop;
+	private int numClusters;
+	private int numIterations;
 
 	public KMeansppGeneric(int dop, String outputPath, int numClusters, int maxIterations) {
 		this.dop = dop;
@@ -30,6 +41,11 @@ public class KMeansppGeneric<T> implements Serializable {
 		this.numIterations = maxIterations;
 	}
 
+	/**
+	 * KMeans++ plan Implementation.
+	 * @param function user defined function for input, prototype calculation and distance measure.
+	 * @throws Exception
+	 */
 	public void run(GenericFunctions<T> function) throws Exception {
 
 
@@ -41,17 +57,22 @@ public class KMeansppGeneric<T> implements Serializable {
 		
 		// ========================== K-Means++ procedure ==================================
 
+		// pick one point as the initial centroid.
 		DataSet<Tuple2<Integer, T>> initial = points.reduce(new PickOnePoint()).map(new PointCentroidConverter());
-
+		// add the next k - 1 centroid one by one, based on the distance.
 		IterativeDataSet<Tuple2<Integer, T>> addition = initial.iterate(numClusters - 1);
 
-		DataSet<Tuple2<T, Double>> distance = points.map(new SelectNearestDistance(function)).withBroadcastSet(addition, "centroids");
+		// compute the distance square of the data points to the nearest centroid.
+		DataSet<Tuple2<T, Double>> distance = points.map(new SelectNearestDistance(function)).withBroadcastSet(initial, "centroids");
 
+		// get the sum of the distance square.
 		DataSet<Tuple2<T, Double>> sum = distance.aggregate(Aggregations.SUM, 1);
 
+		// random pick a new centroid based on the value of distance square.
 		DataSet<Tuple2<Integer, T>> newCenter = distance.reduceGroup(new PickWithDistance())
 			.withBroadcastSet(sum.cross(addition), "sumcrosscentroid");
 
+		// union the new centroid, because union operator doesn't work well with broadcastset, we use reduceGroup instead.
 		DataSet<Tuple2<Integer, T>> centers = addition.reduceGroup(new AddNewCenter())
 			.withBroadcastSet(newCenter, "newcentroid");
 
@@ -93,13 +114,11 @@ public class KMeansppGeneric<T> implements Serializable {
 	//     USER FUNCTIONS
 	// *************************************************************************
 
-
-	/** Converts a Tuple3<Integer, Double,Double> into a Centroid. */
+	/**
+	 * Converts a Tuple3<Integer, Double,Double> into a Centroid.
+	 */
 	public final class PointCentroidConverter extends MapFunction<T, Tuple2<Integer, T>> {
 
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 6696423823857438943L;
 
 		@Override
@@ -108,6 +127,9 @@ public class KMeansppGeneric<T> implements Serializable {
 		}
 	}
 
+	/**
+	 * Pick One Point from the input data as the initial centroid.
+	 */
 	public final class PickOnePoint extends ReduceFunction<T> {
 
 		private static final long serialVersionUID = -4173293469519514256L;
@@ -118,6 +140,9 @@ public class KMeansppGeneric<T> implements Serializable {
 		}
 	}
 
+	/**
+	 * Randomly pick a point based on the distance.
+	 */
 	public final class PickWithDistance extends GroupReduceFunction<Tuple2<T, Double>, Tuple2<Integer, T>> {
 		
 		private static final long serialVersionUID = 2351745306551566932L;
@@ -153,6 +178,9 @@ public class KMeansppGeneric<T> implements Serializable {
 		}
 	}
 
+	/**
+	 * Add the new centroid to the centroid dataset.
+	 */
 	public final class AddNewCenter extends GroupReduceFunction<Tuple2<Integer, T>, Tuple2<Integer, T>> {
 
 		private Collection<Tuple2<Integer, T>> centroid;
@@ -173,7 +201,10 @@ public class KMeansppGeneric<T> implements Serializable {
 			out.collect(centroid.iterator().next());
 		}
 	}
-	/** Determines the closest cluster center for a data point. */
+
+	/**
+	 * Determines the closest cluster center for a data point.
+	 */
 	public final class SelectNearestCenter extends MapFunction<T, Tuple2<Integer, T>> {
 
 		private static final long serialVersionUID = 3830298690315137146L;
@@ -183,7 +214,7 @@ public class KMeansppGeneric<T> implements Serializable {
 		public SelectNearestCenter(GenericFunctions<T> function) {
 			this.function = function;
 		}
-		/** Reads the centroid values from a broadcast variable into a collection. */
+
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			this.centroids = getRuntimeContext().getBroadcastVariable("centroids");
@@ -213,7 +244,9 @@ public class KMeansppGeneric<T> implements Serializable {
 		}
 	}
 
-	/** Determines the closest cluster distance for a data point. */
+	/**
+	 * Determines the closest cluster distance for a data point.
+	 */
 	public final class SelectNearestDistance extends MapFunction<T, Tuple2<T, Double>> {
 
 		private static final long serialVersionUID = -8867196536007432104L;
@@ -250,7 +283,9 @@ public class KMeansppGeneric<T> implements Serializable {
 		}
 	}
 
-	/** Appends a count variable to the tuple. */
+	/**
+	 * Appends a count variable to the tuple.
+	 */
 	public final class CountAppender extends MapFunction<Tuple2<Integer, T>, Tuple3<Integer, T, Long>> {
 
 		private static final long serialVersionUID = -3743500564243984677L;
@@ -261,12 +296,12 @@ public class KMeansppGeneric<T> implements Serializable {
 		}
 	}
 
-	/** Sums and counts point coordinates. */
+	/**
+	 * Sums and counts point coordinates.
+	 */
 	public final class CentroidAccumulator extends ReduceFunction<Tuple3<Integer, T, Long>> {
 
-		/**
-		 * 
-		 */
+
 		private static final long serialVersionUID = 3668504702360578838L;
 		private GenericFunctions<T> function;
 
@@ -279,12 +314,12 @@ public class KMeansppGeneric<T> implements Serializable {
 		}
 	}
 
-	/** Computes new centroid from coordinate sum and count of points. */
+	/**
+	 * Computes new centroid from coordinate sum and count of points.
+	 */
 	public final class CentroidAverager extends MapFunction<Tuple3<Integer, T, Long>, Tuple2<Integer, T>> {
 
-		/**
-		 * 
-		 */
+
 		private static final long serialVersionUID = -439825558772265542L;
 		private GenericFunctions<T> function;
 
@@ -298,9 +333,6 @@ public class KMeansppGeneric<T> implements Serializable {
 		}
 	}
 
-	private String outputPath = null;
-	private int dop;
-	private int numClusters;
-	private int numIterations;
+
 	
 }

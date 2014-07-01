@@ -14,8 +14,14 @@ import eu.stratosphere.api.java.functions.GroupReduceFunction;
 import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.util.Collector;
 
+/**
+ * KMeans++ usage for bag of words
+ */
 public class KMeansppBagOfWords {
-	
+
+	/**
+	 * User defined class for bag of word.
+	 */
 	public static class Document implements Serializable {
 		
 		private static final long serialVersionUID = -8646398807053061675L;
@@ -41,6 +47,9 @@ public class KMeansppBagOfWords {
 		}
 	}
 
+	/**
+	 * Convert the input data into User defined type - Document.
+	 */
 	public static final class RecordToDocConverter extends GroupReduceFunction<Tuple3<Integer, Integer, Double>, Document> {
 
 		private static final long serialVersionUID = -8476366121490468956L;
@@ -62,6 +71,9 @@ public class KMeansppBagOfWords {
 		}
 	}
 
+	/**
+	 * User defined function, including input data, average function and distance measure.
+	 */
 	public static class MyFunctions implements GenericFunctions<Document> {
 
 		private static final long serialVersionUID = 5510454279473390773L;

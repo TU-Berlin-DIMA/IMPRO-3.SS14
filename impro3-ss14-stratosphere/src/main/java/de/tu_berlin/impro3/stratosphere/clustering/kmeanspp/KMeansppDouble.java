@@ -7,8 +7,14 @@ import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.MapFunction;
 
+/**
+ * KMeans++ usage for 2-Dimensional point data.
+ */
 public class KMeansppDouble {
-	
+
+	/**
+	 * User defined class for 2-dimensional point data.
+	 */
 	public static class MyPoint implements Serializable {
 		
 		private static final long serialVersionUID = -8646398807053064759L;
@@ -28,7 +34,10 @@ public class KMeansppDouble {
 			return x + "|" + y;
 		}
 	}
-	
+
+	/**
+	 * Convert the input data to user defined type - MyPoint
+	 */
 	public static final class StringPointConverter extends MapFunction<String, MyPoint> {
 
 		private static final long serialVersionUID = -7253773731266749932L;
@@ -40,6 +49,9 @@ public class KMeansppDouble {
 		}
 	}
 
+	/**
+	 * User defined function, including input data, average function and distance measure.
+	 */
 	public static class MyFunctions implements GenericFunctions<MyPoint> {
 
 		private static final long serialVersionUID = 5510454279473390773L;
