@@ -134,7 +134,7 @@
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>
-                        <phase>compile</phase>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
