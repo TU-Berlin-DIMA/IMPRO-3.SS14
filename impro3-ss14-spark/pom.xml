@@ -20,12 +20,18 @@
 	    <snapshots><enabled>true</enabled></snapshots>
 	  </repository>
 	</repositories>
-	
-     <dependencies>
+
+    <dependencies>
         <!-- Spark -->
-        <dependency>
-		  <groupId>org.apache.spark</groupId>
-		  <artifactId>spark-core_2.10</artifactId>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_2.10</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-mllib_2.10</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
         <!-- Testing -->
@@ -49,10 +55,48 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
         </dependency>
+
+        <!-- Math -->
         <dependency>
         	<groupId>org.apache.commons</groupId>
         	<artifactId>commons-math3</artifactId>
         	<version>3.3</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <executions>
+                    <!-- kmeanspp -->
+                    <execution>
+                        <id>kmeanspp</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>kmeanspp</classifier>
+                            <archive>
+                                <manifestEntries>
+                                    <program-class>
+                                        de.tu_berlin.impro3.spark.clustering.kmeanspp.BagOfWordsKmeanspp
+                                    </program-class>
+                                </manifestEntries>
+                            </archive>
+                            <includes>
+                                <include>**/util/**</include>
+                                <include>**/core/**</include>
+                                <include>**/kmeanspp/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
+
