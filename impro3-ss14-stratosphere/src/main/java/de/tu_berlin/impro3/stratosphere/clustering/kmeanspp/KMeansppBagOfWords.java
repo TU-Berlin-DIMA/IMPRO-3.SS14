@@ -10,6 +10,7 @@ import java.util.Set;
 import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.util.GenericFunctions;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
+import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
 import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.util.Collector;
@@ -39,10 +40,11 @@ public class KMeansppBagOfWords {
 		}
 		@Override
 		public String toString() {
-			String result = "docId:"+id;
-			for(Map.Entry<String, Double> itr : wordFreq.entrySet()) {
-				result += "|(" + itr.getKey() + ":" + itr.getValue() + ")";
-			}
+//			String result = "docId:"+id;
+//			for(Map.Entry<String, Double> itr : wordFreq.entrySet()) {
+//				result += "|(" + itr.getKey() + ":" + itr.getValue() + ")";
+//			}
+			String result = Integer.toString(id);
 			return result;
 		}
 	}
@@ -71,6 +73,17 @@ public class KMeansppBagOfWords {
 		}
 	}
 
+	public static final class FilterFirst3Lines extends FlatMapFunction<String, Tuple3<Integer, Integer, Double>> {
+
+		@Override
+		public void flatMap(String value, Collector<Tuple3<Integer, Integer, Double>> out) throws Exception {
+			String [] splits = value.split(" ");
+			if (splits.length > 2) {
+				out.collect(new Tuple3<Integer, Integer, Double>(Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Double.parseDouble(splits[2])));
+			}
+		}
+	}
+
 	/**
 	 * User defined function, including input data, average function and distance measure.
 	 */
@@ -86,8 +99,8 @@ public class KMeansppBagOfWords {
 
 		@Override
 		public DataSet<Document> getDataSet(ExecutionEnvironment env) {
-			return env.readCsvFile(pointsPath).fieldDelimiter(' ')
-					.types(Integer.class, Integer.class, Double.class)
+			return env.readTextFile(pointsPath)
+					.flatMap(new FilterFirst3Lines())
 					.groupBy(0).reduceGroup(new RecordToDocConverter());
 		}
 
@@ -148,14 +161,13 @@ public class KMeansppBagOfWords {
 
 	public static void main(String[] args) throws Exception {
 		
-		if(args.length < 5) {
+		if(args.length < 4) {
 			System.out.println(getDescription());
 			return;
 		}
-		int dop = Integer.parseInt(args[0]);
-		int k = Integer.parseInt(args[3]);
-		int itrs = Integer.parseInt(args[4]);
-		KMeansppGeneric<Document> kmp = new KMeansppGeneric<Document>(dop, args[2], k, itrs);
-		kmp.run(new MyFunctions(args[1]));
+		int k = Integer.parseInt(args[2]);
+		int itrs = Integer.parseInt(args[3]);
+		KMeansppGeneric<Document> kmp = new KMeansppGeneric<Document>(args[1], k, itrs);
+		kmp.run(new MyFunctions(args[0]));
 	}
 }

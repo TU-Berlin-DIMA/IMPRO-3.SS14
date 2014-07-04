@@ -88,21 +88,20 @@ public class KMeansppDouble {
 	}
 	
 	public static String getDescription() {
-		return "Parameters: <numSubTasks> <inputPath> <outputDirectory> <numClusters> <maxIterations>";
+		return "Parameters: <inputPath> <outputDirectory> <numClusters> <maxIterations>";
 	}
 	
 
 	public static void main(String[] args) throws Exception {
-		if(args.length < 5) {
+		if(args.length < 4) {
 			System.out.println(getDescription());
 			return;
 		}
-		int dop = Integer.parseInt(args[0]);
-		int k = Integer.parseInt(args[3]);
-		int itrs = Integer.parseInt(args[4]);
+		int k = Integer.parseInt(args[2]);
+		int itrs = Integer.parseInt(args[3]);
 
-		KMeansppGeneric<MyPoint> kmp = new KMeansppGeneric<MyPoint>(dop, args[2], k, itrs);
-		kmp.run(new MyFunctions(args[1]));
+		KMeansppGeneric<MyPoint> kmp = new KMeansppGeneric<MyPoint>(args[1], k, itrs);
+		kmp.run(new MyFunctions(args[0]));
 	}
 
 }

@@ -130,7 +130,7 @@ public class KMeansppDoubleTest {
 	}
 	@Test
 	public void kmeansDoubleTest() throws Exception {
-		String [] args = new String[]{"1", "file://" + inputPath, "file://" + outputPath, "4", "100"};
+		String [] args = new String[]{"file://" + inputPath, "file://" + outputPath, "4", "100"};
 		KMeansppDouble.main(args);
 	}
 

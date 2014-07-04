@@ -17,6 +17,7 @@ import eu.stratosphere.api.java.functions.ReduceFunction;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.configuration.Configuration;
+import eu.stratosphere.core.fs.FileSystem;
 import eu.stratosphere.core.fs.Path;
 import eu.stratosphere.util.Collector;
 
@@ -30,12 +31,10 @@ public class KMeansppGeneric<T> implements Serializable {
 	private static final long serialVersionUID = 3203582521287201233L;
 
 	private String outputPath = null;
-	private int dop;
 	private int numClusters;
 	private int numIterations;
 
-	public KMeansppGeneric(int dop, String outputPath, int numClusters, int maxIterations) {
-		this.dop = dop;
+	public KMeansppGeneric(String outputPath, int numClusters, int maxIterations) {
 		this.outputPath = outputPath;
 		this.numClusters = numClusters;
 		this.numIterations = maxIterations;
@@ -54,22 +53,37 @@ public class KMeansppGeneric<T> implements Serializable {
 
 		// get input data
 		DataSet<T> points = function.getDataSet(env);
-		
+
+		/**
+		 * Due to the network buffer bug on the current version of stratosphere, we have to use this mirror datasource trick
+		 * in order to avoid potential self cross. A simple example program to illustrate the bug is here {@link TestBroadcastSet}
+		 */
+		DataSet<T> points2 = function.getDataSet(env);
+
+		DataSet<T> points3 = function.getDataSet(env);
+
+		DataSet<T> points4 = function.getDataSet(env);
+
+
 		// ========================== K-Means++ procedure ==================================
 
 		// pick one point as the initial centroid.
 		DataSet<Tuple2<Integer, T>> initial = points.reduce(new PickOnePoint()).map(new PointCentroidConverter());
+
+
 		// add the next k - 1 centroid one by one, based on the distance.
 		IterativeDataSet<Tuple2<Integer, T>> addition = initial.iterate(numClusters - 1);
 
 		// compute the distance square of the data points to the nearest centroid.
-		DataSet<Tuple2<T, Double>> distance = points.map(new SelectNearestDistance(function)).withBroadcastSet(initial, "centroids");
+		DataSet<Tuple2<T, Double>> distance = points2.map(new SelectNearestDistance(function)).withBroadcastSet(addition, "centroids");
+
+		DataSet<Tuple2<T, Double>> distance2 = points3.map(new SelectNearestDistance(function)).withBroadcastSet(addition, "centroids");
 
 		// get the sum of the distance square.
 		DataSet<Tuple2<T, Double>> sum = distance.aggregate(Aggregations.SUM, 1);
 
 		// random pick a new centroid based on the value of distance square.
-		DataSet<Tuple2<Integer, T>> newCenter = distance.reduceGroup(new PickWithDistance())
+		DataSet<Tuple2<Integer, T>> newCenter = distance2.reduceGroup(new PickWithDistance())
 			.withBroadcastSet(sum.cross(addition), "sumcrosscentroid");
 
 		// union the new centroid, because union operator doesn't work well with broadcastset, we use reduceGroup instead.
@@ -77,14 +91,13 @@ public class KMeansppGeneric<T> implements Serializable {
 			.withBroadcastSet(newCenter, "newcentroid");
 
 		DataSet<Tuple2<Integer, T>> initCenters = addition.closeWith(centers);
-		initCenters.writeAsCsv(new Path(outputPath, "initcenters").toString(), "\n", "|");
 
 		// ========================== standard K-Means procedure ==================================
 
 		// set number of bulk iterations for KMeans algorithm
 		IterativeDataSet<Tuple2<Integer, T>> iteration = initCenters.iterate(numIterations);
 
-		DataSet<Tuple2<Integer, T>> kmeansTmpCenters = points
+		DataSet<Tuple2<Integer, T>> kmeansTmpCenters = points2
 			// compute closest centroid for each point
 			.map(new SelectNearestCenter(function)).withBroadcastSet(iteration, "centroids")
 				// count and sum point coordinates for each centroid
@@ -97,15 +110,12 @@ public class KMeansppGeneric<T> implements Serializable {
 		DataSet<Tuple2<Integer, T>> finalCentroids = iteration.closeWith(
 				kmeansTmpCenters);
 
-		DataSet<Tuple2<Integer, T>> clusteredPoints = points
-			// assign points to final clusters
+		DataSet<Tuple2<Integer, T>> clusteredPoints = points4
+//			assign points to final clusters
 			.map(new SelectNearestCenter(function)).withBroadcastSet(finalCentroids, "centroids");
-
 		// emit result
-		clusteredPoints.writeAsCsv(new Path(outputPath, "points").toString(), "\n", "|");
-		finalCentroids.writeAsCsv(new Path(outputPath, "centers").toString(), "\n", "|");
+		clusteredPoints.writeAsCsv(outputPath, "\n", "|", FileSystem.WriteMode.OVERWRITE);
 		// execute program
-		env.setDegreeOfParallelism(dop);
 		env.execute("KMeans++");
 
 	}
@@ -188,7 +198,6 @@ public class KMeansppGeneric<T> implements Serializable {
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
-			Collection<Tuple2<Tuple2<T, Double>, Tuple2<Integer, T>>> sumWrapper;
 			centroid = getRuntimeContext().getBroadcastVariable("newcentroid");
 
 		}
@@ -201,6 +210,7 @@ public class KMeansppGeneric<T> implements Serializable {
 			out.collect(centroid.iterator().next());
 		}
 	}
+
 
 	/**
 	 * Determines the closest cluster center for a data point.
@@ -230,7 +240,7 @@ public class KMeansppGeneric<T> implements Serializable {
 			for (Tuple2<Integer, T> centroid : centroids) {
 				// compute distance
 
-				double distance = function.distance(p, centroid.f1);
+				double distance = function.distance(centroid.f1, p);
 
 				// update nearest cluster if necessary
 				if (distance < minDistance) {
@@ -272,7 +282,7 @@ public class KMeansppGeneric<T> implements Serializable {
 			for (Tuple2<Integer, T> centroid : centroids) {
 				// compute distance
 
-				double distance = function.distance(p, centroid.f1);
+				double distance = function.distance(centroid.f1, p);
 
 				// update nearest cluster if necessary
 				if (distance < minDistance) {
