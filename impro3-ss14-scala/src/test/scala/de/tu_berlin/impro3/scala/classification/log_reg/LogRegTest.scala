@@ -4,11 +4,13 @@ import org.junit.Test
 import org.junit.Assert._
 import de.tu_berlin.impro3.scala.classification.logreg.LogReg
 import de.tu_berlin.impro3.scala.Algorithm
+import java.nio.file.Paths
+import de.tu_berlin.impro3.scala.common.AlgorithmTest
 
 object LogRegTest{
 
   //BASE_PATH
-  val BASE_PATH = "./impro3-ss14-scala/src/test/resources/"
+  val BASE_PATH = AlgorithmTest.resourcesPath + "/"
 }
 
 /**
