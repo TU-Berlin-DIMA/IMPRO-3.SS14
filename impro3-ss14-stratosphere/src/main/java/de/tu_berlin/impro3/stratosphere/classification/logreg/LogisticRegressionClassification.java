@@ -2,8 +2,6 @@ package de.tu_berlin.impro3.stratosphere.classification.logreg;
 
 import java.util.Iterator;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
-
 import de.tu_berlin.impro3.stratosphere.classification.logreg.LogisticRegression.Point;
 import de.tu_berlin.impro3.stratosphere.classification.logreg.LogisticRegression.Theta;
 import eu.stratosphere.api.java.DataSet;
@@ -131,10 +129,7 @@ public class LogisticRegressionClassification {
 			@Override
 			public ClassifiedPoint map(Point pointWithLabel) throws Exception {
 
-				ArrayRealVector thetaVector = new ArrayRealVector(theta.getComponents(), false);
-				ArrayRealVector pointVector = new ArrayRealVector(pointWithLabel.getFeatures(), false);
-				
-				double classification = LogisticRegression.sigmoid(thetaVector.dotProduct(pointVector));
+				double classification = LogisticRegression.sigmoid(LogisticRegression.dotProduct(theta.getComponents(), pointWithLabel.getFeatures()));
 				
 				point.setClassification(classification);
 				point.setPoint(pointWithLabel);
