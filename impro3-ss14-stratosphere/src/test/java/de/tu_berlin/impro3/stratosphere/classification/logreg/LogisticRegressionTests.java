@@ -34,7 +34,7 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
 	protected void preSubmit() throws Exception {
 		resultPath = getTempDirPath("result");
 		resultPath2 = getTempDirPath("result2");
-		resourcePath =  getClass().getClassLoader().getResource(".").getPath()+"/../classes/";
+		resourcePath =  getClass().getClassLoader().getResource(".").getPath() + "/../test-classes/";
 	}
 	
 	@Override

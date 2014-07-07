@@ -1,6 +1,5 @@
 package de.tu_berlin.impro3.scala.classification.randomforest
 
-import de.tu_berlin.impro3.scala.clustering.AlgorithmTest
 import de.tu_berlin.impro3.scala.core.Vector
 import org.junit.Test
 import org.junit.Assert._
@@ -9,6 +8,7 @@ import org.junit.Before
 import de.tu_berlin.impro3.scala.Algorithm
 import scala.io.Source
 import java.lang.Double
+import de.tu_berlin.impro3.scala.common.AlgorithmTest
 
 object RandomForestTest {
   def validate(dimensions: Int, scale: Int, cardinality: Int, file: String) {
