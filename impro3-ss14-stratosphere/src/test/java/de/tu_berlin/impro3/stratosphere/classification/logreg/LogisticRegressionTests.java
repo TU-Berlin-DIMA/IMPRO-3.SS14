@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -83,8 +82,7 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
 				double result = Double.parseDouble(list.get(0).replaceAll("[^0-9.,-]+",""));
 				
 				Assert.assertTrue(result > 6.0 && result < 6.2);
-                break;
-
+				break;
 			}
 			case 2: {
 
@@ -103,7 +101,7 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
 				double result = Double.parseDouble(list.get(0).replaceAll("[^0-9.,-]+",""));
 				
 				Assert.assertTrue(result > 1.2 && result < 1.4);
-                break;
+				break;
 			}
 			case 3: {
 

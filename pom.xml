@@ -37,6 +37,9 @@
         <!-- Stratosphere -->
         <stratosphere.version>0.5.1</stratosphere.version>
 
+        <!-- Spark -->
+        <spark.version>1.0.0</spark.version>
+
         <!-- Testing -->
         <junit.version>4.11</junit.version>
         <scalatest.version>2.1.6</scalatest.version>
@@ -95,6 +98,13 @@
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-test-utils</artifactId>
                 <version>${stratosphere.version}</version>
+            </dependency>
+
+            <!-- Spark -->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_2.10</artifactId>
+                <version>${spark.version}</version>
             </dependency>
 
             <!-- Arguments parsing -->
@@ -184,6 +194,7 @@
     <modules>
         <module>impro3-ss14-scala</module>
         <module>impro3-ss14-stratosphere</module>
+        <module>impro3-ss14-spark</module>
     </modules>
 
 </project>
