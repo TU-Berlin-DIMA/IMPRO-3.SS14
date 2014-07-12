@@ -3,7 +3,6 @@ package de.tu_berlin.impro3.spark.classification.logreg;
 import java.io.FileWriter;
 import java.io.Serializable;
 
-import org.apache.commons.math.linear.ArrayRealVector;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -234,13 +233,14 @@ public class LogisticRegression {
 				@Override
 				public Gradient call(Point pointWithLabel) throws Exception {
 					Gradient gradient = new Gradient(numberOfFeatures);
-					ArrayRealVector thetaVector = new ArrayRealVector(theta.getComponents(), false);
-					ArrayRealVector pointVector = new ArrayRealVector(pointWithLabel.getFeatures(), false);
-
+					
+					double[] pointVector=pointWithLabel.getFeatures();
+					double[] thetaVector=theta.getComponents();
+					
 					for (int j = 0; j < gradient.getComponents().length; j++) {
 						gradient.setComponent(j,
-								((sigmoid(thetaVector.dotProduct(pointVector)) - pointWithLabel.getLabel()) * pointWithLabel.getFeature(j))
-										/ numberOfPoints);
+								((sigmoid(dotProduct(thetaVector, pointVector)) - pointWithLabel.getLabel())
+										* pointWithLabel.getFeature(j)) / numberOfPoints);
 					}
 
 					return gradient;
@@ -260,9 +260,7 @@ public class LogisticRegression {
 			});
 
 			//Update theta using the gradient sum, the total number of points in the training set, and alpha
-			ArrayRealVector thetaVector = new ArrayRealVector(theta.getComponents(), false);
-			ArrayRealVector gradientVector = new ArrayRealVector(sumGradient.getComponents(), false);
-			theta.setComponents(thetaVector.subtract(gradientVector.mapMultiplyToSelf(alpha)).getData());
+			theta.setComponents(subtract(theta.getComponents(), mapMultiplyToSelf(sumGradient.getComponents(), alpha)));
 
 		}
 
@@ -333,5 +331,49 @@ public class LogisticRegression {
 	public static double sigmoid(double x) {
 		return 1.0 / (1.0 + Math.pow(Math.E, -x));
 	}
+	
+	/**
+	 * Copied from apache commons math3
+	 *
+	 * @param v
+	 * @return
+	 */
+	public static double dotProduct(double a[], double b[]) {
+		double dot = 0;
+		for (int i = 0; i < b.length; i++) {
+			dot += b[i] * a[i];
+		}
+		return dot;
+	}
+
+	/**
+	 * Copied from apache commons math3
+	 *
+	 * @param v
+	 * @return
+	 */
+	public static double[] subtract(double a[], double b[]) {
+		final int dim = b.length;
+		double[] resultData = new double[dim];
+		for (int i = 0; i < dim; i++) {
+			resultData[i] = a[i] - b[i];
+		}
+		return resultData;
+	}
+
+	/**
+	 * Copied from apache commons math3
+	 *
+	 * @param a
+	 * @param d
+	 * @return
+	 */
+	public static double[] mapMultiplyToSelf(double a[], double d) {
+		for (int i = 0; i < a.length; i++) {
+			a[i] *= d;
+		}
+		return a;
+	}
 
 }
+
