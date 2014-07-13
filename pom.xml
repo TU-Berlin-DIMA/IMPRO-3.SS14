@@ -13,16 +13,15 @@
     <description>IMPRO-3.SS14 main project</description>
     <url>https://github.com/TU-Berlin-DIMA/IMPRO-3.SS14</url>
 
-
     <properties>
         <!-- Common -->
         <encoding>UTF-8</encoding>
 
         <!-- Maven Plugins -->
+        <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
         <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
         <maven-source-plugin.version>2.1.2</maven-source-plugin.version>
-        <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
         <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
         <scala-maven-plugin.version>3.1.6</scala-maven-plugin.version>
         <build-helper-maven-plugin.version>1.7</build-helper-maven-plugin.version>
@@ -57,11 +56,13 @@
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-compiler</artifactId>
                 <version>${scala.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Testing -->
@@ -83,28 +84,39 @@
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-clients</artifactId>
                 <version>${stratosphere.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-scala</artifactId>
                 <version>${stratosphere.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-java</artifactId>
                 <version>${stratosphere.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-test-utils</artifactId>
                 <version>${stratosphere.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Spark -->
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-core_2.10</artifactId>
+                <artifactId>spark-core_${scala.tools.version}</artifactId>
                 <version>${spark.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-mllib_${scala.tools.version}</artifactId>
+                <version>1.0.0</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Arguments parsing -->
@@ -122,6 +134,40 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <dependencies>
+        <!-- Scala -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.tools.version}</artifactId>
+        </dependency>
+
+        <!-- Arguments parsing -->
+        <dependency>
+            <groupId>net.sourceforge.argparse4j</groupId>
+            <artifactId>argparse4j</artifactId>
+        </dependency>
+
+        <!-- Dynamic loading -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

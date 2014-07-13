@@ -7,9 +7,9 @@ import com.esotericsoftware.kryo.Kryo;
 
 public class MyKryoRegistrator implements KryoRegistrator {
 
-	@Override
-	public void registerClasses(Kryo kryo) {
-		kryo.register(DocPoint.class);
-	}
-	
+    @Override
+    public void registerClasses(Kryo kryo) {
+        kryo.register(DocPoint.class);
+    }
+
 }
