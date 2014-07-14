@@ -8,25 +8,16 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-
     <artifactId>impro3-ss14-stratosphere</artifactId>
     <name>IMPRO-3.SS14 (Stratosphere)</name>
 
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>snapshots-repo</id>-->
-            <!--<url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
-            <!--<releases>-->
-                <!--<enabled>false</enabled>-->
-            <!--</releases>-->
-            <!--<snapshots>-->
-                <!--<enabled>true</enabled>-->
-            <!--</snapshots>-->
-        <!--</repository>-->
-    <!--</repositories>-->
-
-
     <dependencies>
+        <!-- IMPRO.SS14 -->
+        <dependency>
+            <groupId>de.tu_berlin.dima</groupId>
+            <artifactId>impro3-ss14-core</artifactId>
+        </dependency>
+
         <!-- Stratosphere -->
         <dependency>
             <groupId>eu.stratosphere</groupId>
@@ -48,152 +39,29 @@
 
     <build>
         <plugins>
+            <!-- Java Code formatting -->
+            <plugin>
+                <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+                <artifactId>maven-java-formatter-plugin</artifactId>
+            </plugin>
+
+            <!-- Shade Package (Create package with dependencies) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven-jar-plugin.version}</version>
+                <artifactId>maven-shade-plugin</artifactId>
                 <executions>
-                    <!-- kmeans -->
                     <execution>
-                        <id>kmeans</id>
+                        <id>shade-package</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <classifier>kmeans</classifier>
-                            <archive>
-                                <manifestEntries>
-                                    <program-class>
-                                        de.tu_berlin.impro3.stratosphere.clustering.kmeans.KMeans
-                                    </program-class>
-                                </manifestEntries>
-                            </archive>
-                            <includes>
-                                <include>**/util/**</include>
-                                <include>**/core/**</include>
-                                <include>**/kmeans/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-
-                    <!-- HAC -->
-                    <execution>
-                        <id>hac</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>hac</classifier>
-                            <archive>
-                                <manifestEntries>
-                                    <program-class>
-                                        de.tu_berlin.impro3.stratosphere.clustering.hac.HAC
-                                    </program-class>
-                                </manifestEntries>
-                            </archive>
-                            <includes>
-                                <include>**/util/**</include>
-                                <include>**/core/**</include>
-                                <include>**/hac/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-
-                    <!-- kmeanspp -->
-                    <execution>
-                        <id>kmeanspp</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>kmeanspp</classifier>
-                            <archive>
-                                <manifestEntries>
-                                    <program-class>
-                                        de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.KMeansPlusPlus
-                                    </program-class>
-                                </manifestEntries>
-                            </archive>
-                            <includes>
-                                <include>**/util/**</include>
-                                <include>**/core/**</include>
-                                <include>**/kmeanspp/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-
-                    <!-- canopy -->
-                    <execution>
-                        <id>canopy</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>canopy</classifier>
-                            <archive>
-                                <manifestEntries>
-                                    <program-class>
-                                        de.tu_berlin.impro3.stratosphere.clustering.canopy.Canopy
-                                    </program-class>
-                                </manifestEntries>
-                            </archive>
-                            <includes>
-                                <include>**/util/**</include>
-                                <include>**/core/**</include>
-                                <include>**/canopy/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-
-                    <!-- randomforest -->
-                    <execution>
-                        <id>randomforest</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>randomforest</classifier>
-                            <archive>
-                                <manifestEntries>
-                                    <program-class>
-                                        de.tu_berlin.impro3.stratosphere.clustering.randomforest.RandomForest
-                                    </program-class>
-                                </manifestEntries>
-                            </archive>
-                            <includes>
-                                <include>**/util/**</include>
-                                <include>**/core/**</include>
-                                <include>**/randomforest/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-
-                    <!-- logreg -->
-                    <execution>
-                        <id>logreg</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>logreg</classifier>
-                            <archive>
-                                <manifestEntries>
-                                    <program-class>
-                                        de.tu_berlin.impro3.stratosphere.clustering.logreg.LogReg
-                                    </program-class>
-                                </manifestEntries>
-                            </archive>
-                            <includes>
-                                <include>**/util/**</include>
-                                <include>**/core/**</include>
-                                <include>**/logreg/**</include>
-                            </includes>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>de.tu_berlin.impro3.stratosphere.App</mainClass>
+                                </transformer>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>

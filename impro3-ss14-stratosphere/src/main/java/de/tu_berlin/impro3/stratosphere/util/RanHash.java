@@ -1,14 +1,15 @@
 package de.tu_berlin.impro3.stratosphere.util;
 
 /**
- * c.f. "Press, William H. Numerical recipes 3rd edition: The art of scientific computing.
- *       Cambridge university press, 2007.", pp. 352
+ * c.f. "Press, William H. Numerical recipes 3rd edition: The art of scientific computing. Cambridge
+ * university press, 2007.", pp. 352
  */
 public class RanHash implements SymmetricPRNG {
 
     private static final double D_2_POW_NEG_64 = 5.4210108624275221700e-20;
 
     private long seed;
+
     private long currentPos;
 
     public RanHash() {}
@@ -48,7 +49,7 @@ public class RanHash implements SymmetricPRNG {
 
     @Override
     public int nextInt(int k) {
-        //omitting >= 0 check here
+        // omitting >= 0 check here
         return (int) Math.floor(next() * k);
     }
 }

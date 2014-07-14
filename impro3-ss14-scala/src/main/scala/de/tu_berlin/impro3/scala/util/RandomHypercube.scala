@@ -4,8 +4,10 @@ import scala.util.Random
 import java.nio.file.{Paths, Files, Path}
 import java.nio.charset.Charset
 import java.io.{IOException, BufferedWriter}
-import de.tu_berlin.impro3.scala.Algorithm
-import net.sourceforge.argparse4j.inf.Subparser
+import de.tu_berlin.impro3.scala.ScalaAlgorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
+import _root_.de.tu_berlin.impro3.core.Algorithm
+
 
 object RandomHypercube {
 
@@ -17,32 +19,28 @@ object RandomHypercube {
   val KEY_CARDINALITY = "C"
 
   def apply(dimensions: Int, scale: Int, cardinality: Int, outputFile: String) = {
-    val builder = Map.newBuilder[String, Object]
-    builder += Tuple2(Algorithm.KEY_DIMENSIONS, dimensions.asInstanceOf[Object])
-    builder += Tuple2(Algorithm.KEY_OUTPUT, outputFile)
-    builder += Tuple2(RandomHypercube.KEY_SCALE, scale.asInstanceOf[Object])
-    builder += Tuple2(RandomHypercube.KEY_CARDINALITY, cardinality.asInstanceOf[Object])
-    new RandomSphere(builder.result())
+    val args = new java.util.HashMap[String, AnyRef]
+    args.put(ScalaAlgorithm.Command.KEY_DIMENSIONS, dimensions.asInstanceOf[Object])
+    args.put(Algorithm.Command.KEY_OUTPUT, outputFile)
+    args.put(RandomHypercube.KEY_SCALE, scale.asInstanceOf[Object])
+    args.put(RandomHypercube.KEY_CARDINALITY, cardinality.asInstanceOf[Object])
+    new RandomSphere(new Namespace(args))
   }
 
-  class Config extends Algorithm.Config[RandomHypercube] {
-
-    // algorithm names
-    override val CommandName = "cube-gen"
-    override val Name = "Random Cube Generator"
+  class Command extends ScalaAlgorithm.Command[RandomHypercube]("cube-gen", "Random Cube Generator", classOf[RandomHypercube]) {
 
     override def setup(parser: Subparser) = {
       // add arguments
-      parser.addArgument(Algorithm.KEY_OUTPUT)
+      parser.addArgument(Algorithm.Command.KEY_OUTPUT)
         .`type`[String](classOf[String])
-        .dest(Algorithm.KEY_OUTPUT)
+        .dest(Algorithm.Command.KEY_OUTPUT)
         .metavar("OUTPUT")
         .help("output file ")
 
       // add options (prefixed with --)
-      parser.addArgument(s"--${Algorithm.KEY_DIMENSIONS}")
+      parser.addArgument(s"--${ScalaAlgorithm.Command.KEY_DIMENSIONS}")
         .`type`[Integer](classOf[Integer])
-        .dest(Algorithm.KEY_DIMENSIONS)
+        .dest(ScalaAlgorithm.Command.KEY_DIMENSIONS)
         .metavar("N")
         .help("input dimensions (default 3)")
       parser.addArgument(s"-${RandomHypercube.KEY_SCALE}")
@@ -57,7 +55,7 @@ object RandomHypercube {
         .help("number of generated points (default 1000)")
 
       // add defaults for options
-      parser.setDefault(Algorithm.KEY_DIMENSIONS, new Integer(3))
+      parser.setDefault(ScalaAlgorithm.Command.KEY_DIMENSIONS, new Integer(3))
       parser.setDefault(RandomHypercube.KEY_SCALE, new Integer(100))
       parser.setDefault(RandomHypercube.KEY_CARDINALITY, new Integer(1000))
     }
@@ -65,11 +63,11 @@ object RandomHypercube {
 
 }
 
-class RandomHypercube(args: Map[String, Object]) extends Algorithm(args.updated(Algorithm.KEY_INPUT, args.get(Algorithm.KEY_OUTPUT).get.asInstanceOf[String])) with Iterator[(List[Int], List[Double])] {
+class RandomHypercube(ns: Namespace) extends ScalaAlgorithm(ns) with Iterator[(List[Int], List[Double])] {
 
   // algorithm specific parameters
-  val scale = arguments.get(RandomHypercube.KEY_SCALE).get.asInstanceOf[Int]
-  val cardinality = arguments.get(RandomHypercube.KEY_CARDINALITY).get.asInstanceOf[Int]
+  val scale = ns.get[Int](RandomHypercube.KEY_SCALE)
+  val cardinality = ns.get[Int](RandomHypercube.KEY_CARDINALITY)
 
   val random: Random = new Random(RandomHypercube.SEED)
 

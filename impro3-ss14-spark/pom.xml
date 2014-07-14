@@ -11,8 +11,13 @@
     <artifactId>impro3-ss14-spark</artifactId>
     <name>IMPRO-3.SS14 (Spark)</name>
 
-
     <dependencies>
+        <!-- IMPRO.SS14 -->
+        <dependency>
+            <groupId>de.tu_berlin.dima</groupId>
+            <artifactId>impro3-ss14-core</artifactId>
+        </dependency>
+
         <!-- Spark -->
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -40,32 +45,27 @@
 
     <build>
         <plugins>
+            <!-- Java Code formatting -->
+            <plugin>
+                <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+                <artifactId>maven-java-formatter-plugin</artifactId>
+            </plugin>
+
+            <!-- Shade Package (Create package with dependencies) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
                 <executions>
                     <execution>
+                        <id>shade-package</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <minimizeJar>true</minimizeJar>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/**</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>de.tu_berlin.impro3.spark.App</mainClass>
-                                    <manifestEntries>
-                                        <Version>${project.version}</Version>
-                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                         </configuration>

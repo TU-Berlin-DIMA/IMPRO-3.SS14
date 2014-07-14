@@ -1,9 +1,6 @@
 package de.tu_berlin.impro3.spark.clustering.kmeanspp;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,7 +20,7 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.broadcast.Broadcast;
 
 import scala.Tuple2;
-import de.tu_berlin.impro3.spark.Algorithm;
+import de.tu_berlin.impro3.core.Algorithm;
 
 
 public class BagOfWordsKmeanspp extends Algorithm {
@@ -31,6 +28,10 @@ public class BagOfWordsKmeanspp extends Algorithm {
     public final static String CENTERS_OUTPUT_PATH = File.separator + "centers";
 
     public final static String CLUSTER_OUTPUT_PATH = File.separator + "clusters";
+
+    public BagOfWordsKmeanspp(Namespace ns) {
+        super(ns);
+    }
 
 
     public static class Command extends Algorithm.Command<BagOfWordsKmeanspp> {
@@ -67,13 +68,16 @@ public class BagOfWordsKmeanspp extends Algorithm {
     }
 
     @Override
-    public void run(Namespace ns) {
+    public void run() {
         String dataPath = ns.getString(Command.KEY_INPUT);
         String outputPath = ns.getString(Command.KEY_OUTPUT);
         int k = ns.getInt(Command.KEY_K);
         int numIterations = ns.getInt(Command.KEY_ITERATIONS);
 
-        SparkConf conf = parseCustomizeSparkConf(null, null); // ns.getString("config")
+        SparkConf conf = new SparkConf();
+        conf.setAppName(BagOfWordsKmeanspp.class.getSimpleName())
+            .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+            .set("spark.kryo.registrator", "de.tu_berlin.impro3.spark.clustering.kmeanspp.MyKryoRegistrator");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<String> dataLines = sc.textFile(dataPath);
@@ -98,8 +102,8 @@ public class BagOfWordsKmeanspp extends Algorithm {
                                                        .reduce(new PickNewCenter());
 
             // add new center to collection
-            List<Tuple2<Integer, DocPoint>> centerWrapper = new ArrayList<Tuple2<Integer, DocPoint>>(1);
-            centerWrapper.add(new Tuple2<Integer, DocPoint>(i, newCenter._1()));
+            List<Tuple2<Integer, DocPoint>> centerWrapper = new ArrayList<>(1);
+            centerWrapper.add(new Tuple2<>(i, newCenter._1()));
             kppCenters = kppCenters.union(sc.parallelizePairs(centerWrapper));
 
             brCenters.unpersist();
@@ -130,35 +134,6 @@ public class BagOfWordsKmeanspp extends Algorithm {
         finalClusters.saveAsTextFile(outputPath + CLUSTER_OUTPUT_PATH);
     }
 
-    public SparkConf parseCustomizeSparkConf(SparkConf conf, String filePath) {
-        if (conf == null) {
-            conf =
-                    new SparkConf().setAppName(BagOfWordsKmeanspp.class.getSimpleName())
-                                   .setMaster("local")
-                                   .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                                   .set("spark.kryo.registrator", "de.tu_berlin.impro3.spark.clustering.kmeanspp.MyKryoRegistrator");
-        }
-
-        if (filePath == null || filePath.isEmpty()) {
-            return conf;
-        }
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] fields = line.split("=");
-                if (fields.length > 1) {
-                    conf.set(fields[0], fields[1]);
-                }
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return conf;
-    }
-
     /**
      * Map function for parsing a single line of the input file to a Document A single line
      * represents one dimension of the Document
@@ -172,14 +147,14 @@ public class BagOfWordsKmeanspp extends Algorithm {
         public Iterable<Tuple2<Integer, DocPoint>> call(String line) throws Exception {
             String[] fields = line.split(" ");
 
-            ArrayList<Tuple2<Integer, DocPoint>> result = new ArrayList<Tuple2<Integer, DocPoint>>(1);
+            ArrayList<Tuple2<Integer, DocPoint>> result = new ArrayList<>(1);
 
             if (fields.length == 3) {
                 int docId = Integer.parseInt(fields[0]);
                 DocPoint point = new DocPoint(docId);
                 point.words.put(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]));
 
-                result.add(new Tuple2<Integer, DocPoint>(docId, point));
+                result.add(new Tuple2<>(docId, point));
             }
             return result;
         }
@@ -230,7 +205,7 @@ public class BagOfWordsKmeanspp extends Algorithm {
 
         @Override
         public Tuple2<Integer, DocPoint> call(DocPoint t) throws Exception {
-            return new Tuple2<Integer, DocPoint>(id, t);
+            return new Tuple2<>(id, t);
         }
     }
 
@@ -298,7 +273,7 @@ public class BagOfWordsKmeanspp extends Algorithm {
                     centerId = c._1();
                 }
             }
-            return new Tuple2<Integer, DocPoint>(centerId, v1);
+            return new Tuple2<>(centerId, v1);
         }
     }
 
@@ -329,7 +304,7 @@ public class BagOfWordsKmeanspp extends Algorithm {
                 }
             }
             distanceSum.add(minDistance);
-            return new Tuple2<DocPoint, Double>(v1, minDistance);
+            return new Tuple2<>(v1, minDistance);
         }
     }
 
@@ -360,7 +335,7 @@ public class BagOfWordsKmeanspp extends Algorithm {
                     centerId = c._1();
                 }
             }
-            return new Tuple2<Integer, Tuple2<DocPoint, Long>>(centerId, new Tuple2<DocPoint, Long>(v1, 1L));
+            return new Tuple2<>(centerId, new Tuple2<>(v1, 1L));
         }
     }
 
@@ -376,13 +351,13 @@ public class BagOfWordsKmeanspp extends Algorithm {
         public Tuple2<DocPoint, Long> call(Tuple2<DocPoint, Long> v1, Tuple2<DocPoint, Long> v2) throws Exception {
             if (v1._2() > 1) {
                 v1._1().add(v2._1());
-                return new Tuple2<DocPoint, Long>(v1._1(), v1._2() + v2._2());
+                return new Tuple2<>(v1._1(), v1._2() + v2._2());
             } else if (v2._2() > 1) {
                 v2._1().add(v1._1());
-                return new Tuple2<DocPoint, Long>(v2._1(), v1._2() + v2._2());
+                return new Tuple2<>(v2._1(), v1._2() + v2._2());
             } else {
                 // only create a new object if necessary, good for saving memory
-                return new Tuple2<DocPoint, Long>(DocPoint.add(v1._1(), v2._1()), v1._2() + v2._2());
+                return new Tuple2<>(DocPoint.add(v1._1(), v2._1()), v1._2() + v2._2());
             }
         }
     }
@@ -398,7 +373,7 @@ public class BagOfWordsKmeanspp extends Algorithm {
         @Override
         public Tuple2<Integer, DocPoint> call(Tuple2<Integer, Tuple2<DocPoint, Long>> t) throws Exception {
             t._2()._1().div(t._2()._2());
-            return new Tuple2<Integer, DocPoint>(t._1(), t._2()._1());
+            return new Tuple2<>(t._1(), t._2()._1());
         }
     }
 

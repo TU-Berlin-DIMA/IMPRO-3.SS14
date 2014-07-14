@@ -107,7 +107,7 @@ public class TestBOWKmeanspp {
         args.put(BagOfWordsKmeanspp.Command.KEY_OUTPUT, outputDir);
         args.put(BagOfWordsKmeanspp.Command.KEY_K, k);
         args.put(BagOfWordsKmeanspp.Command.KEY_ITERATIONS, numIterations);
-        new BagOfWordsKmeanspp().run(new Namespace(args));
+        new BagOfWordsKmeanspp(new Namespace(args)).run();
 
         File clusterFile = new File(outputDir + BagOfWordsKmeanspp.CLUSTER_OUTPUT_PATH + resultFileName);
 

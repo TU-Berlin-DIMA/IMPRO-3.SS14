@@ -5,7 +5,7 @@ import de.tu_berlin.impro3.scala.core.Vector
 import org.junit.Test
 import org.junit.Assert._
 import org.junit.Before
-import de.tu_berlin.impro3.scala.Algorithm
+import de.tu_berlin.impro3.scala.ScalaAlgorithm
 import scala.io.Source
 import java.nio.file.{Paths, Files, Path}
 import java.nio.charset.Charset
@@ -18,7 +18,7 @@ object HACTest {
     val calculatedCenters = {
       val builder = List.newBuilder[Vector]
       while (reader.ready()) {
-        val line = reader.readLine().split( """\""" + Algorithm.DELIMITER)
+        val line = reader.readLine().split( """\""" + ScalaAlgorithm.DELIMITER)
         val vector = Vector((for (i <- 0 until dimensions) yield line(i).trim.toDouble).toList)
         builder += vector
       }

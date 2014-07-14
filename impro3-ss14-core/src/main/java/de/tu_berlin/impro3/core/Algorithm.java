@@ -1,12 +1,12 @@
-package de.tu_berlin.impro3.spark;
+package de.tu_berlin.impro3.core;
+
+import java.lang.reflect.InvocationTargetException;
 
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
-import java.lang.reflect.InvocationTargetException;
-
-public abstract class Algorithm {
+abstract public class Algorithm {
 
     /**
      * An abstract command cline interface for algorithms. Each algorithm should define its
@@ -14,7 +14,7 @@ public abstract class Algorithm {
      * 
      * @param <A>
      */
-    public static abstract class Command<A extends Algorithm> {
+    abstract public static class Command<A extends Algorithm> {
 
         // argument names
         public static final String KEY_INPUT = "algorithm.input";
@@ -27,7 +27,7 @@ public abstract class Algorithm {
 
         public final Class<A> clazz;
 
-        protected Command(String name, String help, Class<A> clazz) {
+        public Command(String name, String help, Class<A> clazz) {
             this.name = name;
             this.help = help;
             this.clazz = clazz;
@@ -63,11 +63,15 @@ public abstract class Algorithm {
          * Create an instance of the algorithm.
          * 
          * @return A new algorithm instance.
+         * @param ns
          */
-        public final A instantiate() throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
-            return clazz.getConstructor().newInstance();
+        public final A instantiate(Namespace ns) throws IllegalAccessException,
+                InvocationTargetException,
+                InstantiationException,
+                NoSuchMethodException {
+            return clazz.getConstructor(Namespace.class).newInstance(ns);
         }
     }
 
-    abstract protected void run(Namespace ns) throws Exception;
+    abstract public void run() throws Exception;
 }

@@ -2,7 +2,7 @@ package de.tu_berlin.impro3.spark.classification.logreg;
 
 import java.io.FileWriter;
 
-import de.tu_berlin.impro3.spark.Algorithm;
+import de.tu_berlin.impro3.core.Algorithm;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.apache.commons.math.linear.ArrayRealVector;
@@ -13,6 +13,10 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 
 public class LogisticRegression extends Algorithm {
+
+    public LogisticRegression(Namespace ns) {
+        super(ns);
+    }
 
     // --------------------------------------------------------------------------------------------
     // ------------------------------ Algorithn Command -------------------------------------------
@@ -77,7 +81,7 @@ public class LogisticRegression extends Algorithm {
     // --------------------------------------------------------------------------------------------
 
     @Override
-    public void run(Namespace ns) throws Exception {
+    public void run() throws Exception {
         final int numberOfFeatures = ns.getInt(Command.KEY_ITERATIONS);
         final float alpha = ns.getFloat(Command.KEY_ALPHA);
         final int maxIterations = ns.getInt(Command.KEY_ITERATIONS);

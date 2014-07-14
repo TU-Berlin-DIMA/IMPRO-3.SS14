@@ -2,7 +2,7 @@ package de.tu_berlin.impro3.scala.clustering.kmeansplusplus
 
 import scala.io.Source
 import de.tu_berlin.impro3.scala.core.Vector
-import de.tu_berlin.impro3.scala.Algorithm
+import de.tu_berlin.impro3.scala.ScalaAlgorithm
 import org.junit.Assert._
 import org.junit.Test
 import de.tu_berlin.impro3.scala.clustering.kmeanspp.KMeansPlusPlus
@@ -15,7 +15,7 @@ object KMeansPlusPlusTest {
 		val calculatedCenters = {
 			val builder = List.newBuilder[Vector]
 			while (reader.ready()) {
-				val line = reader.readLine().split( """\""" + Algorithm.DELIMITER)
+				val line = reader.readLine().split( """\""" + ScalaAlgorithm.DELIMITER)
 				val vector = Vector((for (i <- 0 until dimensions) yield line(i).trim.toDouble).toList)
 				builder += vector
 			}
