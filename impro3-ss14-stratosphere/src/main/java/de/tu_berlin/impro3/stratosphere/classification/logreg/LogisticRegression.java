@@ -1,5 +1,6 @@
 package de.tu_berlin.impro3.stratosphere.classification.logreg;
 
+import de.tu_berlin.impro3.core.Algorithm;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.IterativeDataSet;
@@ -9,9 +10,101 @@ import eu.stratosphere.api.java.functions.ReduceFunction;
 import eu.stratosphere.api.java.tuple.Tuple1;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.configuration.Configuration;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 @SuppressWarnings("serial")
-public class LogisticRegression {
+public class LogisticRegression extends Algorithm {
+
+    final int numberOfFeatures;
+
+    final int labelPosition;
+
+    final int maxIterations;
+
+    final float alpha;
+
+    final String pointsWithLabelsPath;
+
+    final String outputPathTheta;
+
+    @SuppressWarnings("unused")
+    public LogisticRegression(Namespace ns) {
+        this(ns.getInt(Command.KEY_NUM_FEATURES),
+             ns.getInt(Command.KEY_LABEL_POSITION),
+             ns.getInt(Command.KEY_ITERATIONS),
+             ns.getFloat(Command.KEY_ALPHA),
+             ns.getString(Command.KEY_INPUT),
+             ns.getString(Command.KEY_OUTPUT));
+    }
+
+    public LogisticRegression(final int numberOfFeatures,
+                              final int labelPosition,
+                              final int maxIterations,
+                              float alpha,
+                              final String pointsWithLabelsPath,
+                              final String outputPathTheta) {
+        this.numberOfFeatures = numberOfFeatures;
+        this.labelPosition = labelPosition;
+        this.maxIterations = maxIterations;
+        this.alpha = alpha;
+        this.pointsWithLabelsPath = pointsWithLabelsPath;
+        this.outputPathTheta = outputPathTheta;
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // ------------------------------ Algorithn Command -------------------------------------------
+    // --------------------------------------------------------------------------------------------
+
+
+    public static class Command extends Algorithm.Command<LogisticRegression> {
+
+        /*
+         * 
+         * final int numberOfFeatures, String pointsWithLabelsPath, float alpha, int maxIterations,
+         * String outputPathTheta, int labelPosition
+         */
+
+        public final static String KEY_NUM_FEATURES = "algorithm.logreg.num.features";
+
+        public final static String KEY_LABEL_POSITION = "algorithm.logreg.label.position";
+
+        public final static String KEY_ALPHA = "algorithm.logreg.alpha";
+
+        public final static String KEY_ITERATIONS = "algorithm.logreg.num.iterations";
+
+        public Command() {
+            super("logreg", "Logistic Regression", LogisticRegression.class);
+        }
+
+        @Override
+        public void setup(Subparser parser) {
+            //@formatter:off
+            parser.addArgument("features") // "-f", "--features"
+                    .type(Integer.class)
+                    .dest(KEY_NUM_FEATURES)
+                    .metavar("NUM-FEATURES")
+                    .help("Number of features");
+            parser.addArgument("label-position") //  "-l", "--label-position"
+                    .type(Integer.class)
+                    .dest(KEY_LABEL_POSITION)
+                    .metavar("LABEL-POSITION")
+                    .help("Position of label in CSV");
+            parser.addArgument("iterations") //  "-i", "--iterations"
+                    .type(Integer.class)
+                    .dest(KEY_ITERATIONS)
+                    .metavar("NUM-ITERATIONS")
+                    .help("Number of iterations");
+            parser.addArgument("alpha") // "-a", "--alpha"
+                    .type(Float.class)
+                    .dest(KEY_ALPHA)
+                    .metavar("ALPHA")
+                    .help("Learning rate alpha");
+            //@formatter:on
+
+            super.setup(parser);
+        }
+    }
 
     // --------------------------------------------------------------------------------------------
     // ------------------------------ Data Structures ---------------------------------------------
@@ -145,49 +238,31 @@ public class LogisticRegression {
     }
 
     // --------------------------------------------------------------------------------------------
-    // ------------------------------ Main Program ------------------------------------------------
+    // --------------------------------- Algorithm ------------------------------------------------
     // --------------------------------------------------------------------------------------------
 
-    // args: numberOfFeatures, inputPathToPoints, alpha, maxIterations, outputPath
-    public static void main(String[] args) throws Exception {
-
-        if (args.length < 5) {
-            System.out.println("You did not provide enough parameters. Please run the program with the following parameters:");
-            System.out.println("[number of features] [path to input points] [learning rate alpha] [number of iterations] [output path] [optional: position of label in CSV]");
-        }
-
-        final int numberOfFeatures = Integer.valueOf(args[0]);
-        String pointsWithLabelsPath = args[1];
-        float alpha = Float.valueOf(args[2]);
-        int maxIterations = Integer.valueOf(args[3]);
-        String outputPathTheta = args[4];
-
-        int labelPosition = 1;
-        if (args.length > 5) {
-            labelPosition = Integer.valueOf(args[5]);
-        }
-
-        runProgram(numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
-
+    @Override
+    public void run() throws Exception {
+        doRun(numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
     }
 
     /**
      * runs the logistic regression program with the given parameters
      * 
-     * @param numberOfFeatures
-     * @param pointsWithLabelsPath
-     * @param alpha
-     * @param maxIterations
-     * @param outputPathTheta
-     * @param labelPosition
+     * @param numberOfFeatures Number of iterations
+     * @param pointsWithLabelsPath Input path
+     * @param alpha Learning rate
+     * @param maxIterations Maximum number of iterations
+     * @param outputPathTheta Output Path
+     * @param labelPosition Position of labels in the CSV
      * @throws Exception
      */
-    public static void runProgram(final int numberOfFeatures,
-                                  String pointsWithLabelsPath,
-                                  float alpha,
-                                  int maxIterations,
-                                  String outputPathTheta,
-                                  int labelPosition) throws Exception {
+    private static void doRun(final int numberOfFeatures,
+                              String pointsWithLabelsPath,
+                              float alpha,
+                              int maxIterations,
+                              String outputPathTheta,
+                              int labelPosition) throws Exception {
 
         Configuration config = new Configuration();
         config.setFloat("alpha", alpha);
@@ -360,7 +435,8 @@ public class LogisticRegression {
     /**
      * Copied from apache commons math3
      * 
-     * @param v
+     * @param a
+     * @param b
      * @return
      */
     public static double dotProduct(double a[], double b[]) {
@@ -374,7 +450,8 @@ public class LogisticRegression {
     /**
      * Copied from apache commons math3
      * 
-     * @param v
+     * @param a
+     * @param b
      * @return
      */
     public static double[] subtract(double a[], double b[]) {

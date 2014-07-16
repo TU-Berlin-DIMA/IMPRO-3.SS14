@@ -2,6 +2,7 @@ package de.tu_berlin.impro3.stratosphere.classification.logreg;
 
 import java.util.Iterator;
 
+import de.tu_berlin.impro3.core.Algorithm;
 import de.tu_berlin.impro3.stratosphere.classification.logreg.LogisticRegression.Point;
 import de.tu_berlin.impro3.stratosphere.classification.logreg.LogisticRegression.Theta;
 import eu.stratosphere.api.java.DataSet;
@@ -11,6 +12,8 @@ import eu.stratosphere.api.java.functions.MapFunction;
 import eu.stratosphere.api.java.tuple.Tuple2;
 import eu.stratosphere.configuration.Configuration;
 import eu.stratosphere.util.Collector;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * 
@@ -18,7 +21,91 @@ import eu.stratosphere.util.Collector;
  * 
  */
 @SuppressWarnings("serial")
-public class LogisticRegressionClassification {
+public class LogisticRegressionClassification extends Algorithm {
+
+    final int numberOfFeatures;
+
+    final int labelPosition;
+
+    final String pointsWithLabelsPath;
+
+    final String outputPath;
+
+    final String outputPathTheta;
+
+    @SuppressWarnings("unused")
+    public LogisticRegressionClassification(Namespace ns) {
+        this(ns.getInt(Command.KEY_NUM_FEATURES),
+             ns.getInt(Command.KEY_LABEL_POSITION),
+             ns.getString(Command.KEY_INPUT),
+             ns.getString(Command.KEY_OUTPUT),
+             ns.getString(Command.KEY_OUTPUT_THETA));
+    }
+
+    public LogisticRegressionClassification(final int numberOfFeatures,
+                                            final int labelPosition,
+                                            final String pointsWithLabelsPath,
+                                            final String outputPath,
+                                            final String outputPathTheta) {
+        this.numberOfFeatures = numberOfFeatures;
+        this.labelPosition = labelPosition;
+        this.pointsWithLabelsPath = pointsWithLabelsPath;
+        this.outputPathTheta = outputPathTheta;
+        this.outputPath = outputPath;
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // ------------------------------ Algorithn Command -------------------------------------------
+    // --------------------------------------------------------------------------------------------
+
+
+    public static class Command extends Algorithm.Command<LogisticRegressionClassification> {
+
+        /*
+         * 
+         * final int numberOfFeatures, String pointsWithLabelsPath, float alpha, int maxIterations,
+         * String outputPathTheta, int labelPosition
+         */
+
+        public final static String KEY_NUM_FEATURES = "algorithm.logreg.num.features";
+
+        public final static String KEY_ITERATIONS = "algorithm.logreg.num.iterations";
+
+        public final static String KEY_LABEL_POSITION = "algorithm.logreg.label.position";
+
+        public static final String KEY_OUTPUT_THETA = "algorithm.output.theta";
+
+        public Command() {
+            super("logreg", "Logistic Regression", LogisticRegressionClassification.class);
+        }
+
+        @Override
+        public void setup(Subparser parser) {
+            //@formatter:off
+            parser.addArgument("features") // "-f", "--features"
+                    .type(Integer.class)
+                    .dest(KEY_NUM_FEATURES)
+                    .metavar("NUM-FEATURES")
+                    .help("Number of features");
+            parser.addArgument("label-position") //  "-l", "--label-position"
+                    .type(Integer.class)
+                    .dest(KEY_LABEL_POSITION)
+                    .metavar("LABEL-POSITION");
+            parser.addArgument("iterations") //  "-i", "--iterations"
+                    .type(Integer.class)
+                    .dest(KEY_ITERATIONS)
+                    .metavar("NUM-ITERATIONS")
+                    .help("Number of iterations");
+            parser.addArgument("theta")
+                    .type(String.class)
+                    .dest(KEY_OUTPUT_THETA)
+                    .metavar("THETA-PATH")
+                    .help("output file path (theta)");
+            //@formatter:on
+
+            super.setup(parser);
+        }
+    }
 
     // --------------------------------------------------------------------------------------------
     // ------------------------------ Data Structures ---------------------------------------------
@@ -38,50 +125,33 @@ public class LogisticRegressionClassification {
         }
 
         public void setClassification(double classification) {
-            this.f0 = new Double(classification);
+            this.f0 = classification;
         }
 
         public double getClassification() {
-            return this.f0.doubleValue();
+            return this.f0;
         }
     }
 
-
     // --------------------------------------------------------------------------------------------
-    // ------------------------------ Main Program ------------------------------------------------
+    // --------------------------------- Algorithm ------------------------------------------------
     // --------------------------------------------------------------------------------------------
 
-    // args: input points, input theta, ouptut classified points
-    public static void main(String[] args) throws Exception {
-
-        if (args.length < 4) {
-            System.out.println("You did not provide enough parameters. Please run the program with the following parameters:");
-            System.out.println("[number of features] [path to input points] [path to input theta] [output path] [optional: position of label in CSV]");
-        }
-
-        final int numberOfFeatures = Integer.valueOf(args[0]);
-        String pointsWithLabelsPath = args[1];
-        String thetaPath = args[2];
-        String outputPath = args[3];
-
-        int labelPosition = 1;
-        if (args.length > 4) {
-            labelPosition = Integer.valueOf(args[4]);
-        }
-
-        runProgram(numberOfFeatures, pointsWithLabelsPath, thetaPath, outputPath, labelPosition);
+    @Override
+    public void run() throws Exception {
+        runProgram(numberOfFeatures, pointsWithLabelsPath, outputPathTheta, outputPath, labelPosition);
     }
 
     /**
      * runs the logist regression classification program with the given parameters
      * 
-     * @param pointsWithLabelsPath
-     * @param thetaPath
-     * @param outputPath
-     * @param labelPosition
+     * @param thetaPath Classification vector path
+     * @param numberOfFeatures Number of iterations
+     * @param pointsWithLabelsPath Input path
+     * @param labelPosition Position of labels in the CSV
      * @throws Exception
      */
-    public static void runProgram(int numberOfFeatures, String pointsWithLabelsPath, String thetaPath, String outputPath, int labelPosition) throws Exception {
+    private static void runProgram(int numberOfFeatures, String pointsWithLabelsPath, String thetaPath, String outputPath, int labelPosition) throws Exception {
 
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
@@ -165,7 +235,7 @@ public class LogisticRegressionClassification {
                     }
                 }
 
-                out.collect(new Integer(cnt));
+                out.collect(cnt);
             }
         });
 

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.After;
 import org.junit.Assert;
@@ -57,7 +58,7 @@ public class LogisticRegressionTests {
         String outputPathTheta = resultPath.getAbsolutePath();
         int labelPosition = 2;
 
-        LogisticRegression.runProgram(sc, numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
+        new LogisticRegression(sc, numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition).run();
 
         ArrayList<String> list = new ArrayList<String>();
         readAllResultLines(list, resultPath, false);
@@ -76,7 +77,7 @@ public class LogisticRegressionTests {
         String outputPathTheta = resultPath.getAbsolutePath();
         int labelPosition = 2;
 
-        LogisticRegression.runProgram(sc, numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
+        new LogisticRegression(sc, numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition).run();
 
         ArrayList<String> list = new ArrayList<String>();
         readAllResultLines(list, resultPath, false);
@@ -95,7 +96,7 @@ public class LogisticRegressionTests {
         String outputPathTheta = resultPath.getAbsolutePath();
         int labelPosition = 2;
 
-        LogisticRegression.runProgram(sc, numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
+        new LogisticRegression(sc, numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition).run();
 
         ArrayList<String> list = new ArrayList<String>();
         readAllResultLines(list, resultPath, false);

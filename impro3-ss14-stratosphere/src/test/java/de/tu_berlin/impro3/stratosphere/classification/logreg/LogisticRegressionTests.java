@@ -46,9 +46,9 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
     }
 
     @Parameters
-    public static Collection<Object[]> getConfigurations() throws FileNotFoundException, IOException {
+    public static Collection<Object[]> getConfigurations() throws IOException {
 
-        LinkedList<Configuration> tConfigs = new LinkedList<Configuration>();
+        LinkedList<Configuration> tConfigs = new LinkedList<>();
 
         for (int i = 1; i <= NUM_PROGRAMS; i++) {
             Configuration config = new Configuration();
@@ -74,12 +74,11 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
                 String pointsWithLabelsPath = resourcePath + "cub_gen_output_10";
                 float alpha = 1;
                 int maxIterations = 5000;
-                String outputPathTheta = resultPath;
                 int labelPosition = 2;
 
-                LogisticRegression.runProgram(numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
+                new LogisticRegression(numberOfFeatures, labelPosition, maxIterations, alpha, pointsWithLabelsPath, resultPath).run();
 
-                ArrayList<String> list = new ArrayList<String>();
+                ArrayList<String> list = new ArrayList<>();
                 readAllResultLines(list, resultPath, false);
 
                 double result = Double.parseDouble(list.get(0).replaceAll("[^0-9.,-]+", ""));
@@ -93,12 +92,11 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
                 String pointsWithLabelsPath = resourcePath + "cub_gen_output_100";
                 float alpha = 1;
                 int maxIterations = 5000;
-                String outputPathTheta = resultPath;
                 int labelPosition = 2;
 
-                LogisticRegression.runProgram(numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
+                new LogisticRegression(numberOfFeatures, labelPosition, maxIterations, alpha, pointsWithLabelsPath, resultPath).run();
 
-                ArrayList<String> list = new ArrayList<String>();
+                ArrayList<String> list = new ArrayList<>();
                 readAllResultLines(list, resultPath, false);
 
                 double result = Double.parseDouble(list.get(0).replaceAll("[^0-9.,-]+", ""));
@@ -112,12 +110,11 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
                 String pointsWithLabelsPath = resourcePath + "cub_gen_output_1000";
                 float alpha = 1;
                 int maxIterations = 5000;
-                String outputPathTheta = resultPath;
                 int labelPosition = 2;
 
-                LogisticRegression.runProgram(numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
+                new LogisticRegression(numberOfFeatures, labelPosition, maxIterations, alpha, pointsWithLabelsPath, resultPath).run();
 
-                ArrayList<String> list = new ArrayList<String>();
+                ArrayList<String> list = new ArrayList<>();
                 readAllResultLines(list, resultPath, false);
 
                 double result = Double.parseDouble(list.get(0).replaceAll("[^0-9.,-]+", ""));
@@ -134,12 +131,11 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
                 String pointsWithLabelsPath = resourcePath + "generated_sample";
                 float alpha = 0.01f;
                 int maxIterations = 5000;
-                String outputPathTheta = resultPath;
                 int labelPosition = 1;
 
-                LogisticRegression.runProgram(numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
+                new LogisticRegression(numberOfFeatures, labelPosition, maxIterations, alpha, pointsWithLabelsPath, resultPath).run();
 
-                ArrayList<String> list = new ArrayList<String>();
+                ArrayList<String> list = new ArrayList<>();
                 readAllResultLines(list, resultPath, false);
 
                 for (String s : list) {
@@ -160,9 +156,9 @@ public class LogisticRegressionTests extends JavaProgramTestBase {
                 String pointsWithLabelsPath = resourcePath + "generated_sample";
                 int labelPosition = 1;
 
-                LogisticRegressionClassification.runProgram(numberOfFeatures, pointsWithLabelsPath, resultPath, resultPath2, labelPosition);
+                new LogisticRegressionClassification(numberOfFeatures, labelPosition, pointsWithLabelsPath, resultPath2, resultPath).run();
 
-                ArrayList<String> list = new ArrayList<String>();
+                ArrayList<String> list = new ArrayList<>();
                 readAllResultLines(list, resultPath2, false);
 
                 for (String s : list) {
