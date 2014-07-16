@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-import net.sourceforge.argparse4j.inf.Namespace;
+import com.google.common.io.Files;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,6 +47,12 @@ public class TestBOWKmeanspp {
 
     Random random = new Random(seed);
 
+    private JavaSparkContext sc;
+
+    private File resultPath;
+
+    private String resourcePath;
+
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
@@ -52,6 +60,7 @@ public class TestBOWKmeanspp {
 
     @Before
     public void generateTestData() throws IOException {
+        sc = new JavaSparkContext("local", "TestBOWKmeanspp");
 
         BufferedWriter out = new BufferedWriter(new FileWriter(new File(tmpFolder.getRoot(), dataFileName)));
 
@@ -98,16 +107,18 @@ public class TestBOWKmeanspp {
     }
 
     @After
-    public void tearDown() {}
+    public void tearDown() {
+        sc.stop();
+        sc = null;
+    }
 
     @Test
     public void testKmeansppAccuracy() throws IOException {
-        Map<String, Object> args = new HashMap<>();
-        args.put(BagOfWordsKmeanspp.Command.KEY_INPUT, new File(tmpFolder.getRoot(), dataFileName).getAbsolutePath());
-        args.put(BagOfWordsKmeanspp.Command.KEY_OUTPUT, outputDir);
-        args.put(BagOfWordsKmeanspp.Command.KEY_K, k);
-        args.put(BagOfWordsKmeanspp.Command.KEY_ITERATIONS, numIterations);
-        new BagOfWordsKmeanspp(new Namespace(args)).run();
+        new BagOfWordsKmeanspp(sc,
+                               k,
+                               numIterations,
+                               new File(tmpFolder.getRoot(), dataFileName).getAbsolutePath(),
+                               outputDir).run();
 
         File clusterFile = new File(outputDir + BagOfWordsKmeanspp.CLUSTER_OUTPUT_PATH + resultFileName);
 

@@ -29,8 +29,34 @@ public class BagOfWordsKmeanspp extends Algorithm {
 
     public final static String CLUSTER_OUTPUT_PATH = File.separator + "clusters";
 
+    private final JavaSparkContext sc;
+
+    private final String dataPath;
+
+    private final String outputPath;
+
+    private final int k;
+
+    private final int numIterations;
+
+    @SuppressWarnings("unused")
     public BagOfWordsKmeanspp(Namespace ns) {
-        super(ns);
+        this(new JavaSparkContext(new SparkConf().setAppName("kmeanspp")),
+             ns.getInt(Command.KEY_K),
+             ns.getInt(Command.KEY_ITERATIONS),
+             ns.getString(Command.KEY_INPUT),
+             ns.getString(Command.KEY_OUTPUT));
+    }
+
+    public BagOfWordsKmeanspp(final JavaSparkContext sc, final int k, final int numIterations, final String dataPath, final String outputPath) {
+        this.sc = sc;
+        this.dataPath = dataPath;
+        this.outputPath = outputPath;
+        this.k = k;
+        this.numIterations = numIterations;
+        // set conf parameters
+        this.sc.getConf().set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+        this.sc.getConf().set("spark.kryo.registrator", "de.tu_berlin.impro3.spark.clustering.kmeanspp.MyKryoRegistrator");
     }
 
 
@@ -40,46 +66,31 @@ public class BagOfWordsKmeanspp extends Algorithm {
 
         public final static String KEY_ITERATIONS = "algorithm.kmeanspp.iterations";
 
-        private final static int DEFAULT_ITERATIONS = 10;
-
         public Command() {
             super("kmeanspp", "K-Means++ (BOW data model)", BagOfWordsKmeanspp.class);
         }
 
         @Override
         public void setup(Subparser parser) {
-            super.setup(parser);
-
             //@formatter:off
-            parser.addArgument("-k")
+            parser.addArgument("k")
                   .type(Integer.class)
-                  .required(true)
                   .dest(KEY_K)
                   .metavar("K")
                   .help("Number of clusters to be formed");
-            parser.addArgument("-i", "--iterations")
+            parser.addArgument("iterations")
                   .type(Integer.class)
-                  .setDefault(DEFAULT_ITERATIONS)
                   .dest(KEY_ITERATIONS)
-                  .metavar("N")
+                  .metavar("ITERATIONS")
                   .help("Number of iterations to be performed before the standard K-Means terminates");
-            //@formatter:on
+            //@formatter:on     
+
+            super.setup(parser);
         }
     }
 
     @Override
     public void run() {
-        String dataPath = ns.getString(Command.KEY_INPUT);
-        String outputPath = ns.getString(Command.KEY_OUTPUT);
-        int k = ns.getInt(Command.KEY_K);
-        int numIterations = ns.getInt(Command.KEY_ITERATIONS);
-
-        SparkConf conf = new SparkConf();
-        conf.setAppName(BagOfWordsKmeanspp.class.getSimpleName())
-            .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-            .set("spark.kryo.registrator", "de.tu_berlin.impro3.spark.clustering.kmeanspp.MyKryoRegistrator");
-        JavaSparkContext sc = new JavaSparkContext(conf);
-
         JavaRDD<String> dataLines = sc.textFile(dataPath);
 
         JavaRDD<DocPoint> points =
