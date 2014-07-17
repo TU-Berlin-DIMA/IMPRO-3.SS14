@@ -4,8 +4,8 @@ import org.junit.Assert._
 import org.junit.Test
 import scala.io.Source
 import de.tu_berlin.impro3.scala.core.Vector
-import de.tu_berlin.impro3.scala.Algorithm
-import de.tu_berlin.impro3.scala.clustering.AlgorithmTest
+import de.tu_berlin.impro3.scala.ScalaAlgorithm
+import de.tu_berlin.impro3.scala.common.AlgorithmTest
 
 object CanopyTest{
   def validate(dimensions: Int, scale: Int, cardinality: Int, file: String) {
@@ -20,7 +20,7 @@ object CanopyTest{
     val calculatedCardinality = {
       val builder = Set.newBuilder[Vector]
       while (reader.ready()) {
-        val line = reader.readLine().split( """\""" + Algorithm.DELIMITER).grouped(dimensions)
+        val line = reader.readLine().split( """\""" + ScalaAlgorithm.DELIMITER).grouped(dimensions)
         for (el <- line){
           val vector = Vector((for (i <- 0 until el.length) yield el(i).trim.toDouble).toList)
           builder += vector

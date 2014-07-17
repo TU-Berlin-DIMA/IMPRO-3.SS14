@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import de.tu_berlin.impro3.core.Algorithm;
 import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.util.GenericFunctions;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
@@ -14,11 +15,68 @@ import eu.stratosphere.api.java.functions.FlatMapFunction;
 import eu.stratosphere.api.java.functions.GroupReduceFunction;
 import eu.stratosphere.api.java.tuple.Tuple3;
 import eu.stratosphere.util.Collector;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * KMeans++ usage for bag of words
  */
-public class KMeansppBagOfWords {
+public class KMeansppBagOfWords extends Algorithm {
+
+	private String dataPath;
+	private String outputPath;
+	private int k;
+	private int numIterations;
+
+	@SuppressWarnings("unused")
+	public KMeansppBagOfWords(Namespace ns) {
+		this(ns.getInt(Command.KEY_K),
+			ns.getInt(Command.KEY_ITERATIONS),
+			ns.getString(Command.KEY_INPUT),
+			ns.getString(Command.KEY_OUTPUT));
+	}
+
+	public KMeansppBagOfWords(final int k, final int numIterations, final String dataPath, final String outputPath) {
+		this.dataPath = dataPath;
+		this.outputPath = outputPath;
+		this.k = k;
+		this.numIterations = numIterations;
+	}
+
+
+	public static class Command extends Algorithm.Command<KMeansppBagOfWords> {
+
+		public final static String KEY_K = "algorithm.kmeanspp.k";
+
+		public final static String KEY_ITERATIONS = "algorithm.kmeanspp.iterations";
+
+		public Command() {
+			super("kmeanspp", "K-Means++ (BOW data model)", KMeansppBagOfWords.class);
+		}
+
+		@Override
+		public void setup(Subparser parser) {
+			//@formatter:off
+			parser.addArgument("k")
+				.type(Integer.class)
+				.dest(KEY_K)
+				.metavar("K")
+				.help("Number of clusters to be formed");
+			parser.addArgument("iterations")
+				.type(Integer.class)
+				.dest(KEY_ITERATIONS)
+				.metavar("ITERATIONS")
+				.help("Number of iterations to be performed before the standard K-Means terminates");
+			//@formatter:on
+
+			super.setup(parser);
+		}
+	}
+
+	// --------------------------------------------------------------------------------------------
+	// ------------------------------ Data Structures ---------------------------------------------
+	// --------------------------------------------------------------------------------------------
+
 
 	/**
 	 * User defined class for bag of word.
@@ -27,7 +85,7 @@ public class KMeansppBagOfWords {
 		
 		private static final long serialVersionUID = -8646398807053061675L;
 		
-		public Map<String, Double> wordFreq;
+		public Map<String, Double> wordFreq = new HashMap<String, Double>();
 		public Integer id;
 		
 		public Document() {
@@ -36,7 +94,6 @@ public class KMeansppBagOfWords {
 
 		public Document(Integer id) {
 			this.id = id;
-			this.wordFreq = new HashMap<String, Double>();
 		}
 		@Override
 		public String toString() {
@@ -154,20 +211,9 @@ public class KMeansppBagOfWords {
 
 	}
 
-	public static String getDescription() {
-		return "Parameters: <numSubTasks> <inputPath> <outputDirectory> <numClusters>  <maxIterations>";
-	}
-	
-
-	public static void main(String[] args) throws Exception {
-		
-		if(args.length < 4) {
-			System.out.println(getDescription());
-			return;
-		}
-		int k = Integer.parseInt(args[2]);
-		int itrs = Integer.parseInt(args[3]);
-		KMeansppGeneric<Document> kmp = new KMeansppGeneric<Document>(args[1], k, itrs);
-		kmp.run(new MyFunctions(args[0]));
+	@Override
+	public void run() throws Exception {
+		KMeansppGeneric<Document> kmp = new KMeansppGeneric<Document>(this.outputPath, this.k, this.numIterations);
+		kmp.run(new MyFunctions(this.dataPath));
 	}
 }

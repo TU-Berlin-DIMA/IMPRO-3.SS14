@@ -2,15 +2,74 @@ package de.tu_berlin.impro3.stratosphere.clustering.kmeanspp;
 
 import java.io.Serializable;
 
+import de.tu_berlin.impro3.core.Algorithm;
 import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.util.GenericFunctions;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
 import eu.stratosphere.api.java.functions.MapFunction;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * KMeans++ usage for 2-Dimensional point data.
  */
-public class KMeansppDouble {
+public class KMeansppDouble extends Algorithm {
+
+
+	private String dataPath;
+	private String outputPath;
+	private int k;
+	private int numIterations;
+
+	@SuppressWarnings("unused")
+	public KMeansppDouble(Namespace ns) {
+		this(ns.getInt(Command.KEY_K),
+			ns.getInt(Command.KEY_ITERATIONS),
+			ns.getString(Command.KEY_INPUT),
+			ns.getString(Command.KEY_OUTPUT));
+	}
+
+	public KMeansppDouble(final int k, final int numIterations, final String dataPath, final String outputPath) {
+		this.dataPath = dataPath;
+		this.outputPath = outputPath;
+		this.k = k;
+		this.numIterations = numIterations;
+	}
+
+
+	public static class Command extends Algorithm.Command<KMeansppDouble> {
+
+		public final static String KEY_K = "algorithm.kmeanspp.k";
+
+		public final static String KEY_ITERATIONS = "algorithm.kmeanspp.iterations";
+
+		public Command() {
+			super("kmeanspp", "K-Means++ (2-dimensional Point data model)", KMeansppDouble.class);
+		}
+
+		@Override
+		public void setup(Subparser parser) {
+			//@formatter:off
+			parser.addArgument("k")
+				.type(Integer.class)
+				.dest(KEY_K)
+				.metavar("K")
+				.help("Number of clusters to be formed");
+			parser.addArgument("iterations")
+				.type(Integer.class)
+				.dest(KEY_ITERATIONS)
+				.metavar("ITERATIONS")
+				.help("Number of iterations to be performed before the standard K-Means terminates");
+			//@formatter:on
+
+			super.setup(parser);
+		}
+	}
+
+	// --------------------------------------------------------------------------------------------
+	// ------------------------------ Data Structures ---------------------------------------------
+	// --------------------------------------------------------------------------------------------
+
 
 	/**
 	 * User defined class for 2-dimensional point data.
@@ -87,21 +146,11 @@ public class KMeansppDouble {
 		}
 	}
 	
-	public static String getDescription() {
-		return "Parameters: <inputPath> <outputDirectory> <numClusters> <maxIterations>";
-	}
-	
 
-	public static void main(String[] args) throws Exception {
-		if(args.length < 4) {
-			System.out.println(getDescription());
-			return;
-		}
-		int k = Integer.parseInt(args[2]);
-		int itrs = Integer.parseInt(args[3]);
-
-		KMeansppGeneric<MyPoint> kmp = new KMeansppGeneric<MyPoint>(args[1], k, itrs);
-		kmp.run(new MyFunctions(args[0]));
+	@Override
+	public void run() throws Exception {
+		KMeansppGeneric<MyPoint> kmp = new KMeansppGeneric<MyPoint>(this.outputPath, this.k, this.numIterations);
+		kmp.run(new MyFunctions(this.dataPath));
 	}
 
 }

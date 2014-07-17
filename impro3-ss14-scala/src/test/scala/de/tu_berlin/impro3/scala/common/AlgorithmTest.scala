@@ -1,8 +1,9 @@
-package de.tu_berlin.impro3.scala.clustering
+package de.tu_berlin.impro3.scala.common
 
-import _root_.de.tu_berlin.impro3.scala.Algorithm
-import _root_.de.tu_berlin.impro3.scala.clustering.kmeans.KMeans
+import de.tu_berlin.impro3.core.Algorithm
+import _root_.de.tu_berlin.impro3.scala.ScalaAlgorithm
 import _root_.de.tu_berlin.impro3.scala.util.RandomSphere
+import net.sourceforge.argparse4j.inf.Namespace
 import org.junit.Test
 import java.nio.file.{Files, Paths}
 
@@ -27,25 +28,24 @@ object AlgorithmTest {
 @Test
 abstract class AlgorithmTest {
 
-  def test(dimensions: Int, scale: Int, cardinality: Int)(specificArgs: Map[String, Object]) = {
+  def test(dimensions: Int, scale: Int, cardinality: Int)(specificArgs: java.util.HashMap[String, AnyRef]) = {
     val inputFile = AlgorithmTest.generateData(dimensions, scale, cardinality)
     val outputFile = s"/tmp/${dimensions}_${scale}_${cardinality}_output.txt"
-    val builder = Map.newBuilder[String, Object]
-    builder += Tuple2(Algorithm.KEY_INPUT, inputFile)
-    builder += Tuple2(Algorithm.KEY_OUTPUT, outputFile)
-    builder += Tuple2(Algorithm.KEY_DIMENSIONS, new Integer(dimensions))
+    val args = new java.util.HashMap[String, AnyRef]
+    args.put(Algorithm.Command.KEY_INPUT, inputFile)
+    args.put(Algorithm.Command.KEY_OUTPUT, outputFile)
+    args.put(ScalaAlgorithm.Command.KEY_DIMENSIONS, new Integer(dimensions))
 
-    // algorithm specific arguments
-    for (arg <- specificArgs) builder += arg
+    args.putAll(specificArgs)
 
     println("TEST(" + dimensions + ", " + scale + ", " + cardinality + ") _________________________\n")
-    getAlgorithm(builder.result()).run()
+    getAlgorithm(new Namespace(args)).run()
 
     validate(dimensions, scale, cardinality, outputFile)
     println()
   }
 
-  def getAlgorithm(args: Map[String, Object]): Algorithm
+  def getAlgorithm(ns: Namespace): ScalaAlgorithm
 
   def validate(dimensions: Int, scale: Int, cardinality: Int, file: String)
 }

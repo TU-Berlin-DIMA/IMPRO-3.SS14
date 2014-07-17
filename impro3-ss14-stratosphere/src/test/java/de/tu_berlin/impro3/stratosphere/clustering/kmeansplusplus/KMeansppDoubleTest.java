@@ -1,18 +1,13 @@
 package de.tu_berlin.impro3.stratosphere.clustering.kmeansplusplus;
 
 import de.tu_berlin.impro3.stratosphere.clustering.kmeanspp.KMeansppDouble;
-import eu.stratosphere.api.java.tuple.Tuple2;
-import org.junit.After;
+import eu.stratosphere.test.util.JavaProgramTestBase;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KMeansppDoubleTest {
+public class KMeansppDoubleTest extends JavaProgramTestBase {
 
 	String data = "1|-8.35|-45.34|\n" +
 		"2|-31.40|35.75|\n" +
@@ -119,31 +114,29 @@ public class KMeansppDoubleTest {
 		"3|-36.6692|35.5748",
 		"4|25.0636|43.1856"};
 
-	String inputPath = "/tmp/kmeanspp_input";
-	String outputPath = "/tmp/kmeanspp_output";
+	String inputPath;
+	String outputPath;
+	int k = 4;
+	int numIterations = 100;
 
-	@Before
-	public void generateTestFile() throws Exception {
-		PrintWriter f = new PrintWriter(inputPath);
-		f.print(data);
-		f.close();
-	}
-	@Test
-	public void kmeansDoubleTest() throws Exception {
-		String [] args = new String[]{"file://" + inputPath, "file://" + outputPath, "4", "100"};
-		KMeansppDouble.main(args);
+	@Override
+	public void preSubmit() throws Exception {
+		inputPath = createTempFile("KMeansppDoubleInput", data);
+		outputPath = getTempDirPath("KMeansppDoubleResult");
 	}
 
-	@After
+	@Override
+	public void testProgram() throws Exception {
+		new KMeansppDouble(k,
+			numIterations,
+			inputPath,
+			outputPath).run();
+		validate();
+	}
+
 	public void validate() throws Exception {
-		File file = new File(outputPath + "/centers");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String line;
 		List<String> result = new ArrayList<String>();
-		while ((line = br.readLine()) != null) {
-			result.add(line);
-		}
-		br.close();
+		readAllResultLines(result, outputPath + "/centers", false);
 		for (String centerWrapper: expectedResult) {
 			String[] centerExpected = centerWrapper.split("\\|");
 			double x = Double.parseDouble(centerExpected[centerExpected.length - 2]);
@@ -159,10 +152,10 @@ public class KMeansppDoubleTest {
 			}
 			Assert.assertTrue("no match for center " + centerWrapper, flag);
 		}
-		cleanup();
 	}
 
-	public void cleanup() throws Exception {
+	@Override
+	public void postSubmit() throws Exception {
 		File outputFile = new File(outputPath);
 		if (outputFile.exists()) {
 			deleteDirectory(outputFile);

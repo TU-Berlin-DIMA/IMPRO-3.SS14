@@ -114,7 +114,8 @@ public class KMeansppGeneric<T> implements Serializable {
 //			assign points to final clusters
 			.map(new SelectNearestCenter(function)).withBroadcastSet(finalCentroids, "centroids");
 		// emit result
-		clusteredPoints.writeAsCsv(outputPath, "\n", "|", FileSystem.WriteMode.OVERWRITE);
+		finalCentroids.writeAsCsv(new Path(outputPath, "centers").toString(), "\n", "|", FileSystem.WriteMode.OVERWRITE);
+		clusteredPoints.writeAsCsv(new Path(outputPath, "clusters").toString(), "\n", "|", FileSystem.WriteMode.OVERWRITE);
 		// execute program
 		env.execute("KMeans++");
 

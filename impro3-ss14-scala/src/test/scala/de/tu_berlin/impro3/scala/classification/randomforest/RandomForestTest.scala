@@ -1,14 +1,12 @@
 package de.tu_berlin.impro3.scala.classification.randomforest
 
-import de.tu_berlin.impro3.scala.clustering.AlgorithmTest
-import de.tu_berlin.impro3.scala.core.Vector
-import org.junit.Test
-import org.junit.Assert._
-import org.junit.Test
-import org.junit.Before
-import de.tu_berlin.impro3.scala.Algorithm
-import scala.io.Source
 import java.lang.Double
+
+import de.tu_berlin.impro3.scala.common.AlgorithmTest
+import net.sourceforge.argparse4j.inf.Namespace
+import org.junit.Test
+
+import scala.io.Source
 
 object RandomForestTest {
   def validate(dimensions: Int, scale: Int, cardinality: Int, file: String) {
@@ -23,8 +21,8 @@ object RandomForestTest {
 
 class RandomForestTest extends AlgorithmTest {
 
-  def getAlgorithm(args: Map[String, Object]) = {
-    new RandomForest(args)
+  def getAlgorithm(ns: Namespace) = {
+    new RandomForest(ns)
   }
 
   @Test

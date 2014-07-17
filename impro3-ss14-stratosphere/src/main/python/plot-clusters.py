@@ -5,7 +5,7 @@ import csv
 import os
 
 if len(sys.argv) < 4 or not sys.argv[1] in ['points', 'result']:
-  print "Usage: plot-clusters.py (points|results) <in-file> <out-file-prefix>"
+  print "Usage: plot-clusters.py (points|result) <in-file> <out-file-prefix>"
   sys.exit(1)
 
 inFile = sys.argv[1]
