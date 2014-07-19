@@ -12,40 +12,6 @@
     <artifactId>impro3-ss14-scala</artifactId>
     <name>IMPRO-3.SS14 (Scala)</name>
 
-    <dependencies>
-        <!-- Scala -->
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-compiler</artifactId>
-        </dependency>
-
-        <!-- Testing -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.tools.version}</artifactId>
-        </dependency>
-
-        <!-- Arguments parsing -->
-        <dependency>
-            <groupId>net.sourceforge.argparse4j</groupId>
-            <artifactId>argparse4j</artifactId>
-        </dependency>
-
-        <!-- Dynamic loading -->
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -54,7 +20,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>de.tu_berlin.impro3.scala.Application</mainClass>
+                            <mainClass>de.tu_berlin.impro3.scala.App</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

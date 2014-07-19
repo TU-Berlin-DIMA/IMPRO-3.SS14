@@ -11,7 +11,7 @@ import net.sourceforge.argparse4j.inf.Subparsers;
 import org.reflections.Reflections;
 
 @SuppressWarnings("WeakerAccess")
-public class Application {
+public class App {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
