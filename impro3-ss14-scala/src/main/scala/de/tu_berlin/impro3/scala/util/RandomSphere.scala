@@ -1,11 +1,14 @@
 package de.tu_berlin.impro3.scala.util
 
-import scala.util.Random
-import java.nio.file.{Paths, Files, Path}
+import java.io.{BufferedWriter, IOException}
 import java.nio.charset.Charset
-import java.io.{IOException, BufferedWriter}
-import de.tu_berlin.impro3.scala.Algorithm
-import net.sourceforge.argparse4j.inf.Subparser
+import java.nio.file.{Files, Path, Paths}
+
+import _root_.de.tu_berlin.impro3.core.Algorithm
+import de.tu_berlin.impro3.scala.ScalaAlgorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
+
+import scala.util.Random
 
 object RandomSphere {
 
@@ -17,32 +20,28 @@ object RandomSphere {
   val KEY_CARDINALITY = "C"
 
   def apply(dimensions: Int, scale: Int, cardinality: Int, outputFile: String) = {
-    val builder = Map.newBuilder[String, Object]
-    builder += Tuple2(Algorithm.KEY_DIMENSIONS, dimensions.asInstanceOf[Object])
-    builder += Tuple2(Algorithm.KEY_OUTPUT, outputFile)
-    builder += Tuple2(RandomSphere.KEY_SCALE, scale.asInstanceOf[Object])
-    builder += Tuple2(RandomSphere.KEY_CARDINALITY, cardinality.asInstanceOf[Object])
-    new RandomSphere(builder.result())
+    val args = new java.util.HashMap[String, AnyRef]
+    args.put(ScalaAlgorithm.Command.KEY_DIMENSIONS, dimensions.asInstanceOf[Object])
+    args.put(Algorithm.Command.KEY_OUTPUT, outputFile)
+    args.put(RandomSphere.KEY_SCALE, scale.asInstanceOf[Object])
+    args.put(RandomSphere.KEY_CARDINALITY, cardinality.asInstanceOf[Object])
+    new RandomSphere(new Namespace(args))
   }
 
-  class Config extends Algorithm.Config[RandomSphere] {
-
-    // algorithm names
-    override val CommandName = "sphere-gen"
-    override val Name = "Random Sphere Generator"
+  class Command extends ScalaAlgorithm.Command[RandomSphere]("sphere-gen", "Random Sphere Generator", classOf[RandomSphere]) {
 
     override def setup(parser: Subparser) = {
       // add arguments
-      parser.addArgument(Algorithm.KEY_OUTPUT)
+      parser.addArgument(Algorithm.Command.KEY_OUTPUT)
         .`type`[String](classOf[String])
-        .dest(Algorithm.KEY_OUTPUT)
+        .dest(Algorithm.Command.KEY_OUTPUT)
         .metavar("OUTPUT")
         .help("output file ")
 
       // add options (prefixed with --)
-      parser.addArgument(s"--${Algorithm.KEY_DIMENSIONS}")
+      parser.addArgument(s"--${ScalaAlgorithm.Command.KEY_DIMENSIONS}")
         .`type`[Integer](classOf[Integer])
-        .dest(Algorithm.KEY_DIMENSIONS)
+        .dest(ScalaAlgorithm.Command.KEY_DIMENSIONS)
         .metavar("N")
         .help("input dimensions (default 3)")
       parser.addArgument(s"-${RandomSphere.KEY_SCALE}")
@@ -57,7 +56,7 @@ object RandomSphere {
         .help("number of generated points (default 1000)")
 
       // add defaults for options
-      parser.setDefault(Algorithm.KEY_DIMENSIONS, new Integer(3))
+      parser.setDefault(ScalaAlgorithm.Command.KEY_DIMENSIONS, new Integer(3))
       parser.setDefault(RandomSphere.KEY_SCALE, new Integer(100))
       parser.setDefault(RandomSphere.KEY_CARDINALITY, new Integer(1000))
     }
@@ -65,11 +64,11 @@ object RandomSphere {
 
 }
 
-class RandomSphere(args: Map[String, Object]) extends Algorithm(args.updated(Algorithm.KEY_INPUT, args.get(Algorithm.KEY_OUTPUT).get.asInstanceOf[String])) with Iterator[(List[Int], List[Double])] {
+class RandomSphere(ns: Namespace) extends ScalaAlgorithm(ns) with Iterator[(List[Int], List[Double])] {
 
   // algorithm specific parameters
-  val scale = arguments.get(RandomSphere.KEY_SCALE).get.asInstanceOf[Int]
-  val cardinality = arguments.get(RandomSphere.KEY_CARDINALITY).get.asInstanceOf[Int]
+  val scale = ns.get[Int](RandomSphere.KEY_SCALE)
+  val cardinality = ns.get[Int](RandomSphere.KEY_CARDINALITY)
 
   val random: Random = new Random(RandomSphere.SEED)
 

@@ -1,9 +1,9 @@
 package de.tu_berlin.impro3.scala.classification.logreg
 
-import _root_.net.sourceforge.argparse4j.inf.Subparser
-import _root_.de.tu_berlin.impro3.scala.Algorithm
+import _root_.de.tu_berlin.impro3.scala.ScalaAlgorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
 import de.tu_berlin.impro3.scala.core.Vector
-import de.tu_berlin.impro3.scala.clustering.kmeans.KVector
+
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
@@ -19,11 +19,7 @@ object LogReg {
   val KEY_TRAINING_SUBSET = "trainingsubset"
   val KEY_ALPHA = "alpha"
 
-  class Config extends Algorithm.Config[LogReg] {
-
-    // algorithm names
-    override val CommandName = "log-reg"
-    override val Name = "Logistic Regression Classifier"
+  class Command extends ScalaAlgorithm.Command[LogReg]("logreg", "Logistic Regression Classifier", classOf[LogReg]) {
 
     override def setup(parser: Subparser) = {
       // get common setup
@@ -32,6 +28,7 @@ object LogReg {
       // add options (prefixed with --)
       parser.addArgument(s"--${LogReg.KEY_GD}")
         .`type`[String](classOf[String])
+        .required(true)
         .dest(LogReg.KEY_GD)
         .metavar("GD")
         .help("type of gradient descent: \"batch\" or \"stochastic\"")
@@ -42,6 +39,7 @@ object LogReg {
       // add options (prefixed with --)
       parser.addArgument(s"--${LogReg.KEY_ITERATIONS}")
         .`type`[Integer](classOf[Integer])
+        .required(true)
         .dest(LogReg.KEY_ITERATIONS)
         .metavar("I")
         .help("\"batch\" and \"stochastic\": number of iterations for gradient descent")
@@ -52,6 +50,7 @@ object LogReg {
       // add options (prefixed with --)
       parser.addArgument(s"--${LogReg.KEY_ALPHA}")
         .`type`[Integer](classOf[Integer])
+        .required(true)
         .dest(LogReg.KEY_ALPHA)
         .metavar("A")
         .help("\"batch\" and \"stochastic\": learning rate alpha")
@@ -77,27 +76,27 @@ object LogReg {
  * This is an implementation of logistic regression using batch or stochastic gradient descent.
  *
  * For batch gradient descent:
- *   It can be used to determine an optimal theta for the sigmoid function g(z)=(1/(1+e^(-z))) were z is used to be
- *   replaced according to the hypothesis h_theta(x)=(1/(1+e^(-theta*x))).
+ * It can be used to determine an optimal theta for the sigmoid function g(z)=(1/(1+e^(-z))) were z is used to be
+ * replaced according to the hypothesis h_theta(x)=(1/(1+e^(-theta*x))).
  *
  * For stochastic gradient descent:
- *  It can be used to determine a good estimation for theta especially when using large data sets.
+ * It can be used to determine a good estimation for theta especially when using large data sets.
  *
- * @param args Contains the following arguments:
- *             - type of gradient descent (--gradient-descent "batch" or "stochastic")
+ * @param ns Contains the following arguments:
+ *           - type of gradient descent (--gradient-descent "batch" or "stochastic")
  *
- *             For "stochastic":
- *             - number of elements to build a random training subset from (--trainingsubset)
+ *           For "stochastic":
+ *           - number of elements to build a random training subset from (--trainingsubset)
  *
- *             For "batch" and "stochastic":
- *             - learning rate alpha (in hundredth) (--alpha)
- *             - number of iterations (--iterations)
- *             - and standard arguments (--dimensions, INPUT, OUTPUT) as described in the super class
+ *           For "batch" and "stochastic":
+ *           - learning rate alpha (in hundredth) (--alpha)
+ *           - number of iterations (--iterations)
+ *           - and standard arguments (--dimensions, INPUT, OUTPUT) as described in the super class
  */
-class LogReg(args: Map[String, Object]) extends Algorithm(args) {
+class LogReg(ns: Namespace) extends ScalaAlgorithm(ns) {
 
   // type of gradient descent
-  val gd_type = arguments.get(LogReg.KEY_GD).get.asInstanceOf[String]
+  val gd_type = ns.get[String](LogReg.KEY_GD)
 
   // read list of point vectors
   val points: ArrayBuffer[Vector] = {
@@ -117,12 +116,12 @@ class LogReg(args: Map[String, Object]) extends Algorithm(args) {
   var theta: Vector = new Vector(List.fill(points.head.elements)(0.0))
 
   // algorithm unspecific parameters
-  val alpha =  arguments.get(LogReg.KEY_ALPHA).get.asInstanceOf[Int] / 100.toDouble;
-  val number_of_iterations = arguments.get(LogReg.KEY_ITERATIONS).get.asInstanceOf[Int];
+  val alpha = ns.get[Int](LogReg.KEY_ALPHA) / 100.toDouble
+  val number_of_iterations = ns.get[Int](LogReg.KEY_ITERATIONS)
 
-  def run(): Unit = {
+  override def run(): Unit = {
 
-    if(gd_type == "batch")
+    if (gd_type == "batch")
       batchGradientDescent()
     else if (gd_type == "stochastic")
       stochasticGradientDescent()
@@ -131,10 +130,10 @@ class LogReg(args: Map[String, Object]) extends Algorithm(args) {
 
     // optional used for plotting to debug
 
-    var i = -1;
-    for(point <- points) {
+    var i = -1
+    for (point <- points) {
       i = i + 1
-      print("{"+point.elementAt(0)+","+label(i)+"},")
+      print("{" + point.elementAt(0) + "," + label(i) + "},")
     }
 
 
@@ -142,37 +141,37 @@ class LogReg(args: Map[String, Object]) extends Algorithm(args) {
     println(theta)
 
     println("==EVALUATION==")
-    var a = -1;
-    var correct_classified = 0;
-    for(point <- points) {
+    var a = -1
+    var correct_classified = 0
+    for (point <- points) {
       a = a + 1
-      var prob = sigmoid(point*theta)
-      println(point+": Probability: "+prob+" is: "+label(a))
-      if(prob >= 0.5 && label(a) == 1 || prob < 0.5 && label(a) == 0)
+      val prob = sigmoid(point * theta)
+      println(point + ": Probability: " + prob + " is: " + label(a))
+      if (prob >= 0.5 && label(a) == 1 || prob < 0.5 && label(a) == 0)
         correct_classified = correct_classified + 1
     }
-    println("\n CORRECT CLASSIFIED: "+correct_classified)
+    println("\n CORRECT CLASSIFIED: " + correct_classified)
   }
 
-  def batchGradientDescent() : Unit = {
+  def batchGradientDescent(): Unit = {
 
-    for(i <- 1 to number_of_iterations) {
+    for (i <- 1 to number_of_iterations) {
 
-      var grad: Vector = new Vector(List.fill(points.head.elements)(0.0));
+      var grad: Vector = new Vector(List.fill(points.head.elements)(0.0))
 
       // For all features
-      for(feature <- 0 to points.head.elements-1) {
+      for (feature <- 0 to points.head.elements - 1) {
 
-        var i = -1;
+        var i = -1
         // For every point of the training set
-        for(point <- points) {
+        for (point <- points) {
           i = i + 1
 
           // Calculate new weighted gradient
-          val new_grad = ((sigmoid(point * theta) - label(i)) * point.elementAt(feature)) * (1.toDouble/points.size.toDouble)
+          val new_grad = ((sigmoid(point * theta) - label(i)) * point.elementAt(feature)) * (1.toDouble / points.size.toDouble)
 
           // Update gradient vector
-          grad = new Vector(grad.components.updated(feature, grad.elementAt(feature) +  new_grad))
+          grad = new Vector(grad.components.updated(feature, grad.elementAt(feature) + new_grad))
         }
       }
       // Update theta with complete gradient
@@ -180,13 +179,13 @@ class LogReg(args: Map[String, Object]) extends Algorithm(args) {
     }
   }
 
-  def stochasticGradientDescent() : Unit = {
+  def stochasticGradientDescent(): Unit = {
 
     // algorithm specific parameters
-    var training_subset = arguments.get(LogReg.KEY_TRAINING_SUBSET).get.asInstanceOf[Int];
+    var training_subset = ns.get[Int](LogReg.KEY_TRAINING_SUBSET)
 
     // default
-    if(training_subset <= 0) {
+    if (training_subset <= 0) {
       training_subset = points.length
     }
 
@@ -195,7 +194,7 @@ class LogReg(args: Map[String, Object]) extends Algorithm(args) {
     val r = Random
 
     // randomly shuffle training (sub)set
-    for(i <- 0 to training_subset) {
+    for (i <- 0 to training_subset) {
       val point_a = points(i)
       val label_a = label(i)
 
@@ -210,9 +209,9 @@ class LogReg(args: Map[String, Object]) extends Algorithm(args) {
       label.update(new_pos, label_a)
     }
 
-    var grad: Vector = new Vector(List.fill(points.head.elements)(0.0));
+    var grad: Vector = new Vector(List.fill(points.head.elements)(0.0))
 
-    for(j <- 1 to number_of_iterations) {
+    for (j <- 1 to number_of_iterations) {
 
       // For every point of the training (sub)set
       for (i <- 0 to training_subset) {
@@ -236,6 +235,6 @@ class LogReg(args: Map[String, Object]) extends Algorithm(args) {
    * @return the value of the sigmoid function at the given x position
    */
   def sigmoid(x: Double): Double = {
-    return 1.0 / (1.0 + math.pow(math.E, -x))
+    1.0 / (1.0 + math.pow(math.E, -x))
   }
 }

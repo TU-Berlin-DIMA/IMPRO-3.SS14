@@ -2,9 +2,9 @@ package de.tu_berlin.impro3.spark.classification.logreg;
 
 import java.io.FileWriter;
 
-import de.tu_berlin.impro3.spark.Algorithm;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+
 import org.apache.commons.math.linear.ArrayRealVector;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -12,7 +12,50 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 
+import de.tu_berlin.impro3.core.Algorithm;
+
 public class LogisticRegression extends Algorithm {
+
+    private final JavaSparkContext sc;
+
+    private final int numberOfFeatures;
+
+    private final String pointsWithLabelsPath;
+
+    private final float alpha;
+
+    private final int maxIterations;
+
+    private final String outputPathTheta;
+
+    private final int labelPosition;
+
+    @SuppressWarnings("unused")
+    public LogisticRegression(Namespace ns) {
+        this(new JavaSparkContext(new SparkConf().setAppName("logreg")),
+             ns.getInt(Command.KEY_NUM_FEATURES),
+             ns.getString(Command.KEY_INPUT),
+             ns.getFloat(Command.KEY_ALPHA),
+             ns.getInt(Command.KEY_ITERATIONS),
+             ns.getString(Command.KEY_OUTPUT),
+             ns.getInt(Command.KEY_LABEL_POSITION));
+    }
+
+    public LogisticRegression(final JavaSparkContext sc,
+                              final int numberOfFeatures,
+                              final String pointsWithLabelsPath,
+                              float alpha,
+                              final int maxIterations,
+                              final String outputPathTheta,
+                              final int labelPosition) {
+        this.sc = sc;
+        this.numberOfFeatures = numberOfFeatures;
+        this.pointsWithLabelsPath = pointsWithLabelsPath;
+        this.alpha = alpha;
+        this.maxIterations = maxIterations;
+        this.outputPathTheta = outputPathTheta;
+        this.labelPosition = labelPosition;
+    }
 
     // --------------------------------------------------------------------------------------------
     // ------------------------------ Algorithn Command -------------------------------------------
@@ -46,25 +89,21 @@ public class LogisticRegression extends Algorithm {
             //@formatter:off
             parser.addArgument("-f", "--features")
                     .type(Integer.class)
-                    .required(true)
                     .dest(KEY_NUM_FEATURES)
                     .metavar("N")
                     .help("Number of features");
             parser.addArgument("-a", "--alpha")
                     .type(Float.class)
-                    .required(true)
                     .dest(KEY_ALPHA)
                     .metavar("ALPHA")
                     .help("Learning rate alpha");
             parser.addArgument("-i", "--iterations")
                     .type(Integer.class)
-                    .required(true)
                     .dest(KEY_ITERATIONS)
                     .metavar("N")
                     .help("Number of iterations");
             parser.addArgument("-l", "--label-position")
                     .type(Integer.class)
-                    .setDefault(1)
                     .dest(KEY_LABEL_POSITION)
                     .metavar("X")
                     .help("Position of label in CSV");
@@ -77,17 +116,7 @@ public class LogisticRegression extends Algorithm {
     // --------------------------------------------------------------------------------------------
 
     @Override
-    public void run(Namespace ns) throws Exception {
-        final int numberOfFeatures = ns.getInt(Command.KEY_ITERATIONS);
-        final float alpha = ns.getFloat(Command.KEY_ALPHA);
-        final int maxIterations = ns.getInt(Command.KEY_ITERATIONS);
-        final int labelPosition = ns.getInt(Command.KEY_LABEL_POSITION);
-        final String pointsWithLabelsPath = ns.getString(Command.KEY_INPUT);
-        final String outputPathTheta = ns.getString(Command.KEY_OUTPUT);
-
-        SparkConf conf = new SparkConf().setAppName("LogReg");
-        JavaSparkContext sc = new JavaSparkContext(conf);
-
+    public void run() throws Exception {
         runProgram(sc, numberOfFeatures, pointsWithLabelsPath, alpha, maxIterations, outputPathTheta, labelPosition);
     }
 

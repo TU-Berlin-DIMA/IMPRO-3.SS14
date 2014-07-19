@@ -1,7 +1,7 @@
 package de.tu_berlin.impro3.scala.classification.randomforest
 
-import _root_.net.sourceforge.argparse4j.inf.Subparser
-import _root_.de.tu_berlin.impro3.scala.Algorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
+import _root_.de.tu_berlin.impro3.scala.ScalaAlgorithm
 import _root_.de.tu_berlin.impro3.scala.core.Vector
 
 import scala.util.Random
@@ -20,11 +20,7 @@ object RandomForest {
   val KEY_RATIO = "ratio"
   val KEY_MAX_DEPTH = "max-depth"
 
-  class Config extends Algorithm.Config[RandomForest] {
-
-    // algorithm names
-    override val CommandName = "random-forest"
-    override val Name = "Random Forest Classifier"
+  class Command extends ScalaAlgorithm.Command[RandomForest]("random-forest", "Random Forest Classifier", classOf[RandomForest]) {
 
     override def setup(parser: Subparser) = {
       // get common setup
@@ -64,22 +60,23 @@ object RandomForest {
     }
   }
 
-  def getLabeledData(iter: Iterator[(List[Double], List[Double], String)]) : (List[Vector], List[String]) = {
-    val data = (for(line <- iter) yield (new Vector(line._1), line._3)).toList
+  def getLabeledData(iter: Iterator[(List[Double], List[Double], String)]): (List[Vector], List[String]) = {
+    val data = (for (line <- iter) yield (new Vector(line._1), line._3)).toList
     data.unzip
   }
 
 }
 
-class RandomForest(args: Map[String, Object]) extends Algorithm(args) {
+class RandomForest(ns: Namespace) extends ScalaAlgorithm(ns) {
 
   // algorithm specific parameters
-  val noTrees = arguments.get(RandomForest.KEY_B).get.asInstanceOf[Int]
-  val noAttributesPerSplit = arguments.get(RandomForest.KEY_M).get.asInstanceOf[Int] // sqrt (dimension)
-  val bootstrapRatio = arguments.get(RandomForest.KEY_RATIO).get.asInstanceOf[Double]
-  val maxDepth = arguments.get(RandomForest.KEY_MAX_DEPTH).get.asInstanceOf[Int]
+  val noTrees = ns.get[Int](RandomForest.KEY_B)
+  val noAttributesPerSplit = ns.get[Int](RandomForest.KEY_M)
+  // sqrt (dimension)
+  val bootstrapRatio = ns.get[Int](RandomForest.KEY_RATIO)
+  val maxDepth = ns.get[Int](RandomForest.KEY_MAX_DEPTH)
 
-  def run(): Unit = {
+  override def run(): Unit = {
 
     val (vectors, labels) = RandomForest.getLabeledData(this.iterator())
 
@@ -92,7 +89,7 @@ class RandomForest(args: Map[String, Object]) extends Algorithm(args) {
 
     if (vectors(0).elements == 3) {
       var testPoint = new Vector(List[Double](Random.nextDouble() * 100 * Random.nextInt(2), Random.nextDouble() * 100 * Random.nextInt(2), Random.nextDouble() * 100 * Random.nextInt(2)))
-      val (a,b) = classifier.classify(testPoint)
+      val (a, b) = classifier.classify(testPoint)
       println("the value (" + testPoint.elementAt(0) + " , " + testPoint.elementAt(1) + " , " + testPoint.elementAt(2) + ") has a probability of (" + b + ") that its in class " + a)
 
     }
@@ -103,7 +100,7 @@ class RandomForest(args: Map[String, Object]) extends Algorithm(args) {
     val writer: BufferedWriter = Files.newBufferedWriter(file, charSet)
 
     try {
-      writer.write(classifier.oobEstimate.toString())
+      writer.write(classifier.oobEstimate.toString)
       writer.flush()
     } catch {
       case ex: IOException => println(ex)

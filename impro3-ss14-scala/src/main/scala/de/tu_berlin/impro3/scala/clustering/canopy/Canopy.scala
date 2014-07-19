@@ -1,7 +1,7 @@
 package de.tu_berlin.impro3.scala.clustering.canopy
 
-import _root_.net.sourceforge.argparse4j.inf.Subparser
-import _root_.de.tu_berlin.impro3.scala.Algorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
+import _root_.de.tu_berlin.impro3.scala.ScalaAlgorithm
 import de.tu_berlin.impro3.scala.clustering.kmeans.KVector
 import scala.collection.mutable
 import scala.collection.immutable.Stack
@@ -15,11 +15,7 @@ object Canopy {
   val KEY_T1 = "T1"
   val KEY_T2 = "T2"
 
-  class Config extends Algorithm.Config[Canopy] {
-
-    // algorithm names
-    override val CommandName = "canopy"
-    override val Name = "Canopy Clustering"
+  class Command extends ScalaAlgorithm.Command[Canopy]("canopy", "Canopy Clustering", classOf[Canopy]) {
 
     override def setup(parser: Subparser) = {
       // get common setup
@@ -45,10 +41,10 @@ object Canopy {
 
 }
 
-class Canopy(args: Map[String, Object]) extends Algorithm(args) {
+class Canopy(ns: Namespace) extends ScalaAlgorithm(ns) {
   // algorithm specific parameters
-  val T1 = arguments.get(Canopy.KEY_T1).get.asInstanceOf[Int]
-  val T2 = arguments.get(Canopy.KEY_T2).get.asInstanceOf[Int]
+  val T1 = ns.get[Int](Canopy.KEY_T1)
+  val T2 = ns.get[Int](Canopy.KEY_T2)
   // Check on parameter constraints
   if (T1 < T2) {
     throw new IllegalArgumentException("T1=" + T1 + " needs to be grater than T2=" + T2)

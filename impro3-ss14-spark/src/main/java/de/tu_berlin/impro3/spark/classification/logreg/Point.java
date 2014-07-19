@@ -1,8 +1,8 @@
 package de.tu_berlin.impro3.spark.classification.logreg;
 
 /**
- * This class represents a labeled point in space. It consists of a feature vector (represented
- * as array of doubles) and an Integer label.
+ * This class represents a labeled point in space. It consists of a feature vector (represented as
+ * array of doubles) and an Integer label.
  */
 public class Point {
 
@@ -12,7 +12,7 @@ public class Point {
 
     /**
      * Returns the vector of features
-     *
+     * 
      * @return vector of features
      */
     public double[] getFeatures() {
@@ -21,7 +21,7 @@ public class Point {
 
     /**
      * Returns the feature at position i
-     *
+     * 
      * @return feature at position i
      */
     public double getFeature(int i) {
@@ -37,7 +37,7 @@ public class Point {
 
     /**
      * Returns the label
-     *
+     * 
      * @return label
      */
     public Integer getLabel() {
@@ -46,7 +46,7 @@ public class Point {
 
     /**
      * Sets the label
-     *
+     * 
      * @param label The label
      */
     public void setLabel(Integer label) {
