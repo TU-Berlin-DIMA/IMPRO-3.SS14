@@ -1,69 +1,46 @@
-/*
- * (C) Copyright TU-Berlin DIMA and others.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Contributors:
- *     - oresti
- *     - seekermrm
- */
 package de.tu_berlin.impro3.stratosphere.clustering.canopy;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import eu.stratosphere.test.util.JavaProgramTestBase;
 
-import java.io.File;
+import java.util.ArrayList;
 
-public class CanopyClusteringTest {
+public class CanopyClusteringTest extends JavaProgramTestBase {
 
-    // docID wordId
-    private static final String tinyInput =
-            "1 100\n1 101\n1 102\n" +
-            "2 100\n2 101\n2 105\n" +
-            "3 106\n3 107\n" +
-            "4 107\n" +
-            "5 106\n";
+    private static String inputPath;
 
-    private static final String tinyOutput =
-            "1,2\n3,4,5\n";
+    private static String outputPath;
 
-    /**
-     * This one may be used to verify the output.
-     */
-    @Test
-    public void testTinyData() throws Exception {
-        String in = "/tmp/testData.txt";
-        String out = "/tmp/output-canopy-tinyTest.csv";
-        FileUtils.writeStringToFile(new File(in), tinyInput);
-        String[] args = {"1", in, out, "0.15", "0.45"};
-        Canopy.main(args);
+    private static float t1;
 
-        final String result = FileUtils.readFileToString(new File(out));
-        Assert.assertTrue(result.equals(tinyOutput));
+    private static float t2;
+
+    private static int maxIterations;
+
+    @Override
+    protected void preSubmit() throws Exception {
+        inputPath = this.getClass().getResource("/datasets/clustering/bag-of-words/docword.kos.txt").toURI().toString();
+        outputPath = getTempDirPath("canopy-output");
+        t1 = 0.06f;
+        t2 = 0.1f;
+        maxIterations = Integer.MAX_VALUE;
     }
 
-    /**
-     * There should be 317 canopies for these thresholds and kos.txt.
-     */
-    @Test
-    public void testKosData() throws Exception {
-        String kosData = this.getClass().getResource("/datasets/clustering/bag-of-words/docword.kos.txt").toURI().toString();
-        String[] args = {"1", kosData, "/tmp/output-canopy-kos.csv", "0.06", "0.1"};
-        Canopy.main(args);
+    @Override
+    protected void testProgram() throws Exception {
+        testKosData();
+    }
 
-        final String result = FileUtils.readFileToString(new File("/tmp/output-canopy-kos.csv"));
-        String[] lines = result.split("\r\n|\r|\n");
-        Assert.assertTrue(lines.length == 317);
+    public void testKosData() throws Exception {
+        // run canopy
+        new Canopy(inputPath, outputPath, t1, t2, maxIterations).run();
+
+        ArrayList<String> list = new ArrayList<>();
+        readAllResultLines(list, outputPath, false);
+        System.out.println("Canopy clustering ran fine. You may run k-means inside the clusters which look like:");
+        System.out.println("...");
+        for (String line : list.subList(5, 10)) {
+            System.out.println(line);
+        }
+        System.out.println("...");
     }
 }
