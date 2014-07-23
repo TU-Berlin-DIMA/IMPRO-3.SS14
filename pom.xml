@@ -13,22 +13,22 @@
     <description>IMPRO-3.SS14 main project</description>
     <url>https://github.com/TU-Berlin-DIMA/IMPRO-3.SS14</url>
 
-
     <properties>
         <!-- Common -->
         <encoding>UTF-8</encoding>
 
         <!-- Maven Plugins -->
+        <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
         <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
         <maven-source-plugin.version>2.1.2</maven-source-plugin.version>
-        <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
         <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
         <scala-maven-plugin.version>3.1.6</scala-maven-plugin.version>
         <build-helper-maven-plugin.version>1.7</build-helper-maven-plugin.version>
 
         <!-- Java -->
         <java.version>1.7</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Scala -->
         <scala.version>2.10.4</scala.version>
@@ -36,6 +36,9 @@
 
         <!-- Stratosphere -->
         <stratosphere.version>0.5.1</stratosphere.version>
+
+        <!-- Spark -->
+        <spark.version>1.0.0</spark.version>
 
         <!-- Testing -->
         <junit.version>4.11</junit.version>
@@ -49,16 +52,40 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- IMPRO-3 -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>impro3-ss14-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>impro3-ss14-scala</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>impro3-ss14-spark</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>impro3-ss14-stratosphere</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Scala -->
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-compiler</artifactId>
                 <version>${scala.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Testing -->
@@ -80,21 +107,39 @@
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-clients</artifactId>
                 <version>${stratosphere.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-scala</artifactId>
                 <version>${stratosphere.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-java</artifactId>
                 <version>${stratosphere.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>eu.stratosphere</groupId>
                 <artifactId>stratosphere-test-utils</artifactId>
                 <version>${stratosphere.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Spark -->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_${scala.tools.version}</artifactId>
+                <version>${spark.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-mllib_${scala.tools.version}</artifactId>
+                <version>1.0.0</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Arguments parsing -->
@@ -113,77 +158,174 @@
         </dependencies>
     </dependencyManagement>
 
+    <dependencies>
+        <!-- Scala -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.tools.version}</artifactId>
+        </dependency>
+
+        <!-- Arguments parsing -->
+        <dependency>
+            <groupId>net.sourceforge.argparse4j</groupId>
+            <artifactId>argparse4j</artifactId>
+        </dependency>
+
+        <!-- Dynamic loading -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
-        <plugins>
-            <!-- Compiler -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
+        <pluginManagement>
+            <plugins>
+                <!-- Java Compiler -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
 
-            <!-- Scala compiler -->
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>${scala-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>scala-compile-first</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scala-test-compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <recompileMode>incremental</recompileMode>
-                    <useZincServer>true</useZincServer>
-                    <jvmArgs>
-                        <jvmArg>-Xms128m</jvmArg>
-                        <jvmArg>-Xmx512m</jvmArg>
-                        <javacArg>-Xlint:unchecked</javacArg>
-                        <javacArg>-Xlint:deprecation</javacArg>
-                    </jvmArgs>
-                    <args>
-                        <arg>-deprecation</arg>
-                        <arg>-feature</arg>
-                    </args>
-                </configuration>
-            </plugin>
+                <!-- Scala compiler -->
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>${scala-maven-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>scala-compile-first</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>scala-test-compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <recompileMode>incremental</recompileMode>
+                        <useZincServer>true</useZincServer>
+                        <jvmArgs>
+                            <jvmArg>-Xms128m</jvmArg>
+                            <jvmArg>-Xmx512m</jvmArg>
+                            <javacArg>-Xlint:unchecked</javacArg>
+                            <javacArg>-Xlint:deprecation</javacArg>
+                        </jvmArgs>
+                        <args>
+                            <arg>-deprecation</arg>
+                            <arg>-feature</arg>
+                        </args>
+                    </configuration>
+                </plugin>
 
-            <!-- Surefire -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-                <configuration>
-                    <includes>
-                        <include>**/*Suite.class</include>
-                        <include>**/*Test.class</include>
-                        <include>**/*Tests.class</include>
-                        <include>**/*Spec.class</include>
-                        <include>**/*Specs.class</include>
-                    </includes>
-                </configuration>
-            </plugin>
-        </plugins>
+                <!-- Surefire -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                    <configuration>
+                        <includes>
+                            <include>**/*Suite.class</include>
+                            <include>**/*Test.class</include>
+                            <include>**/*Tests.class</include>
+                            <include>**/*Spec.class</include>
+                            <include>**/*Specs.class</include>
+                        </includes>
+                    </configuration>
+                </plugin>
+
+                <!-- Java Code formatting -->
+                <plugin>
+                    <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+                    <artifactId>maven-java-formatter-plugin</artifactId>
+                    <version>0.4</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>format</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <configFile>eclipse/formatter.xml</configFile>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>impro3-ss14-core</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
+                <!-- Shade Package (Create package with dependencies) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>2.3</version>
+                    <executions>
+                        <execution>
+                            <id>shade-package</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                            <configuration>
+                                <minimizeJar>true</minimizeJar>
+                                <filters>
+                                    <filter>
+                                        <artifact>*:*</artifact>
+                                        <excludes>
+                                            <exclude>META-INF/**</exclude>
+                                        </excludes>
+                                    </filter>
+                                </filters>
+                                <transformers>
+                                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                        <mainClass>de.tu_berlin.impro3.spark.App</mainClass>
+                                        <manifestEntries>
+                                            <Version>${project.version}</Version>
+                                        </manifestEntries>
+                                    </transformer>
+                                </transformers>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <modules>
-        <module>impro3-ss14-scala</module>
+        <module>impro3-ss14-core</module>
+        <!--module>impro3-ss14-scala</module-->
         <module>impro3-ss14-stratosphere</module>
+        <module>impro3-ss14-spark</module>
     </modules>
 
 </project>

@@ -1,25 +1,22 @@
 package de.tu_berlin.impro3.scala.clustering.hac
 
-import _root_.net.sourceforge.argparse4j.inf.Subparser
-import _root_.de.tu_berlin.impro3.scala.Algorithm
-import java.nio.file.{Paths, Files, Path}
+import java.io.BufferedWriter
 import java.nio.charset.Charset
-import java.io.{IOException, BufferedWriter}
+import java.nio.file.{Files, Path, Paths}
+
+import _root_.de.tu_berlin.impro3.scala.ScalaAlgorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
 
 object HAC {
 
-  class Config extends Algorithm.Config[HAC] {
-
-    // algorithm names
-    override val CommandName = "hac"
-    override val Name = "Hierarchical Agglomerative Clustering"
+  class Command extends ScalaAlgorithm.Command[HAC]("hac", "Hierarchical Agglomerative Clustering", classOf[HAC]) {
 
     override def setup(parser: Subparser) = {
       // get common setup
       super.setup(parser)
       // add options (prefixed with --)
       // add defaults for options
-      parser.setDefault("dimensions", new Integer(2))
+      parser.setDefault(ScalaAlgorithm.Command.KEY_DIMENSIONS, new Integer(2))
     }
   }
   
@@ -38,7 +35,7 @@ object HAC {
 
 }
 
-class HAC(args: Map[String, Object]) extends Algorithm(args) {
+class HAC(ns: Namespace) extends ScalaAlgorithm(ns) {
   var writer: BufferedWriter = null
   
   var clusters: List[Cluster] = {
@@ -55,7 +52,7 @@ class HAC(args: Map[String, Object]) extends Algorithm(args) {
   val testClusters: List[Cluster] = List(testCluster1, testCluster2, testCluster3, testCluster4)
   println(testClusters)
   
-  def run(): Unit = {
+  override def run(): Unit = {
     println("Starting HAC Algorithm")
     
     println("before while amount of clusters: " + clusters.size)

@@ -5,7 +5,7 @@ import org.junit.Test
 import org.junit.Assert._
 import org.junit.Test
 import org.junit.Before
-import de.tu_berlin.impro3.scala.Algorithm
+import de.tu_berlin.impro3.scala.ScalaAlgorithm
 import scala.io.Source
 import de.tu_berlin.impro3.scala.common.AlgorithmTest
 
@@ -15,7 +15,7 @@ object KMeansTest {
     val calculatedCenters = {
       val builder = List.newBuilder[Vector]
       while (reader.ready()) {
-        val line = reader.readLine().split( """\""" + Algorithm.DELIMITER)
+        val line = reader.readLine().split( """\""" + ScalaAlgorithm.DELIMITER)
         val vector = Vector((for (i <- 0 until dimensions) yield line(i).trim.toDouble).toList)
         builder += vector
       }

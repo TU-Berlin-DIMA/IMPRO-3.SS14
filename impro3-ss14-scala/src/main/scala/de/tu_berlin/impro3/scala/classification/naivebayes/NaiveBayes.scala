@@ -1,15 +1,11 @@
 package de.tu_berlin.impro3.scala.classification.naivebayes
 
-import _root_.net.sourceforge.argparse4j.inf.Subparser
-import _root_.de.tu_berlin.impro3.scala.Algorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
+import _root_.de.tu_berlin.impro3.scala.ScalaAlgorithm
 
 object NaiveBayes {
 
-  class Config extends Algorithm.Config[NaiveBayes] {
-
-    // algorithm names
-    override val CommandName = "naive-bayes"
-    override val Name = "Naive Bayes Classifier"
+  class Command extends ScalaAlgorithm.Command[NaiveBayes]("naive-bayes", "Naive Bayes Classifier", classOf[NaiveBayes]) {
 
     override def setup(parser: Subparser) = {
       // get common setup
@@ -21,7 +17,7 @@ object NaiveBayes {
 
 }
 
-class NaiveBayes(args: Map[String, Object]) extends Algorithm(args) {
+class NaiveBayes(ns: Namespace) extends ScalaAlgorithm(ns) {
 
-  def run(): Unit = {}
+  override def run(): Unit = {}
 }

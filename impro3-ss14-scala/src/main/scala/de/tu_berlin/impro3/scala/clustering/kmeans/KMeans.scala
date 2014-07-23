@@ -1,11 +1,13 @@
 package de.tu_berlin.impro3.scala.clustering.kmeans
 
-import _root_.scala.util.Random
-import _root_.net.sourceforge.argparse4j.inf.Subparser
-import _root_.de.tu_berlin.impro3.scala.Algorithm
-import java.nio.file.{Paths, Files, Path}
+import java.io.{BufferedWriter, IOException}
 import java.nio.charset.Charset
-import java.io.{IOException, BufferedWriter}
+import java.nio.file.{Files, Path, Paths}
+
+import _root_.de.tu_berlin.impro3.scala.ScalaAlgorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
+
+import _root_.scala.util.Random
 
 object KMeans {
 
@@ -15,11 +17,7 @@ object KMeans {
   // constnats
   val Seed = 5431423142056L
 
-  class Config extends Algorithm.Config[KMeans] {
-
-    // algorithm names
-    override val CommandName = "k-means"
-    override val Name = "K-Means Clustering"
+  class Command extends ScalaAlgorithm.Command[KMeans]("k-means", "K-Means Clustering", classOf[KMeans]) {
 
     override def setup(parser: Subparser) = {
       // get common setup
@@ -39,22 +37,15 @@ object KMeans {
 
 }
 
-class KMeans(args: Map[String, Object]) extends Algorithm(args) {
+class KMeans(ns: Namespace) extends ScalaAlgorithm(ns) {
 
   // algorithm specific parameters
-  val K = arguments.get(KMeans.KEY_K).get.asInstanceOf[Int]
+  val K = ns.get[Int](KMeans.KEY_K)
 
   // extra objects
   val Random = new Random(KMeans.Seed)
 
   // algorithm state
-//  val centers = for (i <- 0 until K) yield {
-//    val c = List.newBuilder[Double]
-//    for (j <- 0 until dimensions) {
-//      c += Random.nextDouble()
-//    }
-//    new KVector(c.result())
-//  }
   val centers = {
     val builder = Set.newBuilder[KVector]
     for (i <- iterator()) {
@@ -71,7 +62,7 @@ class KMeans(args: Map[String, Object]) extends Algorithm(args) {
 
   val clusters = for (i <- 0 until centers.size) yield (i, new Cluster(centers(i)))
 
-  def run(): Unit = {
+  override def run(): Unit = {
 
     var iterate = false
     do {

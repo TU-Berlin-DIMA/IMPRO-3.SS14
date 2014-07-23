@@ -1,11 +1,12 @@
 package de.tu_berlin.impro3.scala.classification
 
-import org.junit.Test
-import org.junit.Assert._
+import de.tu_berlin.impro3.core.Algorithm
+import de.tu_berlin.impro3.scala.ScalaAlgorithm
 import de.tu_berlin.impro3.scala.classification.logreg.LogReg
-import de.tu_berlin.impro3.scala.Algorithm
-import java.nio.file.Paths
 import de.tu_berlin.impro3.scala.common.AlgorithmTest
+import net.sourceforge.argparse4j.inf.Namespace
+import org.junit.Assert._
+import org.junit.Test
 
 object LogRegTest{
 
@@ -22,22 +23,22 @@ object LogRegTest{
  */
 class LogRegTest {
 
-  def getAlgorithm(args: Map[String, Object]) : LogReg = {
-    new LogReg(args)
+  def getAlgorithm(ns: Namespace) : LogReg = {
+    new LogReg(ns)
   }
 
   def getAlgorithm(input:String, version:String, alpha:Integer, iterations:Integer, trainingSubset:Integer) : LogReg = {
 
-    val builder = Map.newBuilder[String, Object]
-    builder += Tuple2(LogReg.KEY_ALPHA, alpha)
-    builder += Tuple2(LogReg.KEY_GD, version)
-    builder += Tuple2(LogReg.KEY_TRAINING_SUBSET, trainingSubset)
-    builder += Tuple2(LogReg.KEY_ITERATIONS, iterations)
-    builder += Tuple2(Algorithm.KEY_DIMENSIONS, new Integer(1)) //Dimension is always 1 in current implementation
-    builder += Tuple2(Algorithm.KEY_INPUT, input)
-    builder += Tuple2(Algorithm.KEY_OUTPUT, "X") //No output will be generated
+    val args = new java.util.HashMap[String, Object]
+    args.put(LogReg.KEY_ALPHA, alpha)
+    args.put(LogReg.KEY_GD, version)
+    args.put(LogReg.KEY_TRAINING_SUBSET, trainingSubset)
+    args.put(LogReg.KEY_ITERATIONS, iterations)
+    args.put(ScalaAlgorithm.Command.KEY_DIMENSIONS, new Integer(1)) //Dimension is always 1 in current implementation
+    args.put(Algorithm.Command.KEY_INPUT, input)
+    args.put(Algorithm.Command.KEY_OUTPUT, "X") //No output will be generated
 
-    getAlgorithm(builder.result())
+    getAlgorithm(new Namespace(args))
   }
 
   @Test
