@@ -1,15 +1,18 @@
 package de.tu_berlin.impro3.stratosphere.clustering.hac;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.junit.Assert;
+
+import de.tu_berlin.impro3.stratosphere.clustering.hac.HAC.LinkageMode;
 import eu.stratosphere.api.java.DataSet;
 import eu.stratosphere.api.java.ExecutionEnvironment;
-import junit.framework.Assert;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import eu.stratosphere.test.util.JavaProgramTestBase;
 
-import java.io.File;
-import java.util.*;
-
-public class HAC_FlinkJavaTest {
+public class HACTest extends JavaProgramTestBase {
 
     private List<HAC.ClusterPair> generateSimilarities() {
         List<HAC.ClusterPair> result = new ArrayList<>();
@@ -25,10 +28,10 @@ public class HAC_FlinkJavaTest {
     }
 
     private void updateOldIds(List<HAC.ClusterPair> list, int oldid, int newid) {
-        for(HAC.ClusterPair pair : list) {
-            if(pair.getCluster1().equals(oldid))
+        for (HAC.ClusterPair pair : list) {
+            if (pair.getCluster1().equals(oldid))
                 pair.setCluster1(newid);
-            else if(pair.getCluster2().equals(oldid))
+            else if (pair.getCluster2().equals(oldid))
                 pair.setCluster2(newid);
         }
     }
@@ -36,8 +39,8 @@ public class HAC_FlinkJavaTest {
     private List<HAC.ClusterPair> removeSameCluster(List<HAC.ClusterPair> list) {
         ArrayList<HAC.ClusterPair> result = new ArrayList<>();
 
-        for(HAC.ClusterPair pair : list) {
-            if(!pair.getCluster1().equals(pair.getCluster2()))
+        for (HAC.ClusterPair pair : list) {
+            if (!pair.getCluster1().equals(pair.getCluster2()))
                 result.add(pair);
         }
 
@@ -46,9 +49,10 @@ public class HAC_FlinkJavaTest {
 
     private String generateResultString(List<HAC.ClusterPair> data, final boolean min) {
         Collections.sort(data, new Comparator<HAC.ClusterPair>() {
+
             @Override
             public int compare(HAC.ClusterPair o1, HAC.ClusterPair o2) {
-                if(o1.getSimilarity() < o2.getSimilarity())
+                if (o1.getSimilarity() < o2.getSimilarity())
                     return min ? -1 : 1;
                 else
                     return min ? 1 : -1;
@@ -57,7 +61,7 @@ public class HAC_FlinkJavaTest {
 
         HAC.ClusterHistory result = new HAC.ClusterHistory();
 
-        while(data.size() > 1) {
+        while (data.size() > 1) {
             HAC.ClusterPair pair = data.get(0);
             result.add(new HAC.ClusterHistory(pair.getCluster1(), pair.getCluster2()));
             updateOldIds(data, pair.getCluster1(), pair.getCluster2());
@@ -67,29 +71,26 @@ public class HAC_FlinkJavaTest {
         return result.toString();
     }
 
-    @Test
-    public void testclusterDocuments() throws Exception {
-	    TemporaryFolder testFolder = new TemporaryFolder();
-        testFolder.create();
+    @Override
+    protected void testProgram() throws Exception {
+        String outputPath = getTempDirPath("result");
 
         ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
         List<HAC.ClusterPair> similarities = generateSimilarities();
         DataSet<HAC.ClusterPair> sim = env.fromCollection(similarities);
-		HAC.clusterDocuments(env, "SINGLE", sim, testFolder.getRoot().getPath(), 100);
+        HAC.clusterDocuments(env, LinkageMode.SINGLE, sim, outputPath, 100);
 
-	    long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         env.execute();
-	    System.out.println("Execution Time: " + (System.currentTimeMillis() - startTime));
+        System.out.println("Execution Time: " + (System.currentTimeMillis() - startTime));
 
-	    Scanner scanner = new Scanner(new File(testFolder.getRoot().getPath()));
-	    String line = scanner.nextLine();
+        List<String> resultLines = new ArrayList<String>(1);
+        readAllResultLines(resultLines, outputPath);
 
-        String resulstring = generateResultString(similarities, false);
-        System.out.println(resulstring);
+        String expectedResult = generateResultString(similarities, false);
 
-        if (!line.equals(resulstring)) {
-		    Assert.fail("Incorrect merging by HAC");
-	    }
+        Assert.assertEquals("Output line count", 1, resultLines.size());
+        Assert.assertEquals("Cluster history", expectedResult, resultLines.get(0));
     }
 }
