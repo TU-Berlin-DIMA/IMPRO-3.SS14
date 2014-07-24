@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-import com.google.common.io.Files;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.After;
 import org.junit.Before;
@@ -21,7 +19,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 
-public class TestBOWKmeanspp {
+public class KMeansppBagOfWordsTests {
 
     public static final long seed = 14839204302832L;
 
@@ -114,13 +112,13 @@ public class TestBOWKmeanspp {
 
     @Test
     public void testKmeansppAccuracy() throws IOException {
-        new BagOfWordsKmeanspp(sc,
+        new KMeansppBagOfWords(sc,
                                k,
                                numIterations,
                                new File(tmpFolder.getRoot(), dataFileName).getAbsolutePath(),
                                outputDir).run();
 
-        File clusterFile = new File(outputDir + BagOfWordsKmeanspp.CLUSTER_OUTPUT_PATH + resultFileName);
+        File clusterFile = new File(outputDir + KMeansppBagOfWords.CLUSTER_OUTPUT_PATH + resultFileName);
 
         // read clusters formed by K-Means++ from result file
         BufferedReader reader = new BufferedReader(new FileReader(clusterFile));

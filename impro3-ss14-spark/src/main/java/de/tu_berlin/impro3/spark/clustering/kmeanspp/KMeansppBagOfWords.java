@@ -23,7 +23,7 @@ import scala.Tuple2;
 import de.tu_berlin.impro3.core.Algorithm;
 
 
-public class BagOfWordsKmeanspp extends Algorithm {
+public class KMeansppBagOfWords extends Algorithm {
 
     public final static String CENTERS_OUTPUT_PATH = File.separator + "centers";
 
@@ -40,7 +40,7 @@ public class BagOfWordsKmeanspp extends Algorithm {
     private final int numIterations;
 
     @SuppressWarnings("unused")
-    public BagOfWordsKmeanspp(Namespace ns) {
+    public KMeansppBagOfWords(Namespace ns) {
         this(new JavaSparkContext(new SparkConf().setAppName("kmeanspp")),
              ns.getInt(Command.KEY_K),
              ns.getInt(Command.KEY_ITERATIONS),
@@ -48,7 +48,7 @@ public class BagOfWordsKmeanspp extends Algorithm {
              ns.getString(Command.KEY_OUTPUT));
     }
 
-    public BagOfWordsKmeanspp(final JavaSparkContext sc, final int k, final int numIterations, final String dataPath, final String outputPath) {
+    public KMeansppBagOfWords(final JavaSparkContext sc, final int k, final int numIterations, final String dataPath, final String outputPath) {
         this.sc = sc;
         this.dataPath = dataPath;
         this.outputPath = outputPath;
@@ -60,14 +60,14 @@ public class BagOfWordsKmeanspp extends Algorithm {
     }
 
 
-    public static class Command extends Algorithm.Command<BagOfWordsKmeanspp> {
+    public static class Command extends Algorithm.Command<KMeansppBagOfWords> {
 
         public final static String KEY_K = "algorithm.kmeanspp.k";
 
         public final static String KEY_ITERATIONS = "algorithm.kmeanspp.iterations";
 
         public Command() {
-            super("kmeanspp", "K-Means++ (BOW data model)", BagOfWordsKmeanspp.class);
+            super("kmeanspp", "K-Means++ (BOW data model)", KMeansppBagOfWords.class);
         }
 
         @Override
