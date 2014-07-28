@@ -8,7 +8,7 @@ import eu.stratosphere.api.java.ExecutionEnvironment;
 /**
  * The Generic function to be passed to KMeans++ algorithm, which can be used to define the input
  * format, get the distance matrix and calculate the prototype of new cluster
- *
+ * 
  * @param <T> genric type
  */
 public interface GenericFunctions<T> extends Serializable {
