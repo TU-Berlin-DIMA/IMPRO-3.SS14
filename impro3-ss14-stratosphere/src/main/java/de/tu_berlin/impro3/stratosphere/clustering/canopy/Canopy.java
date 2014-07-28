@@ -120,7 +120,7 @@ public class Canopy extends Algorithm {
 
     /**
      * runs the canopy clustering program with the given parameters
-     *
+     * 
      * @param inputPath Input path
      * @param outputPath Output path
      * @param t1 Threshold T1 (Less similarity)
@@ -287,7 +287,7 @@ public class Canopy extends Algorithm {
     /**
      * Computes the Jaccard coefficient from two strings. Ideally from two lists but that cant be
      * done in flink right now.
-     *
+     * 
      * @return the similarity of two documents.
      */
     public static float computeJaccard(String first, String second) {

@@ -112,11 +112,7 @@ public class KMeansppBagOfWordsTests {
 
     @Test
     public void testKmeansppAccuracy() throws IOException {
-        new KMeansppBagOfWords(sc,
-                               k,
-                               numIterations,
-                               new File(tmpFolder.getRoot(), dataFileName).getAbsolutePath(),
-                               outputDir).run();
+        new KMeansppBagOfWords(sc, k, numIterations, new File(tmpFolder.getRoot(), dataFileName).getAbsolutePath(), outputDir).run();
 
         File clusterFile = new File(outputDir + KMeansppBagOfWords.CLUSTER_OUTPUT_PATH + resultFileName);
 

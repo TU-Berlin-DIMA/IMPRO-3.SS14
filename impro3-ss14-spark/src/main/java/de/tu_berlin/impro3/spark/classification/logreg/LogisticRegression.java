@@ -274,48 +274,48 @@ public class LogisticRegression extends Algorithm {
     public static double sigmoid(double x) {
         return 1.0 / (1.0 + Math.pow(Math.E, -x));
     }
-    
-    /**
-	 * Copied from apache commons math3
-	 *
-	 * @param v
-	 * @return
-	 */
-	public static double dotProduct(double a[], double b[]) {
-		double dot = 0;
-		for (int i = 0; i < b.length; i++) {
-			dot += b[i] * a[i];
-		}
-		return dot;
-	}
-	
-	/**
-	 * Copied from apache commons math3
-	 *
-	 * @param v
-	 * @return
-	 */
-	public static double[] subtract(double a[], double b[]) {
-		final int dim = b.length;
-		double[] resultData = new double[dim];
-		for (int i = 0; i < dim; i++) {
-			resultData[i] = a[i] - b[i];
-		}
-		return resultData;
-	}
 
-	/**
-	 * Copied from apache commons math3
-	 *
-	 * @param a
-	 * @param d
-	 * @return
-	 */
-	public static double[] mapMultiplyToSelf(double a[], double d) {
-		for (int i = 0; i < a.length; i++) {
-			a[i] *= d;
-		}
-		return a;
-	}
+    /**
+     * Copied from apache commons math3
+     * 
+     * @param v
+     * @return
+     */
+    public static double dotProduct(double a[], double b[]) {
+        double dot = 0;
+        for (int i = 0; i < b.length; i++) {
+            dot += b[i] * a[i];
+        }
+        return dot;
+    }
+
+    /**
+     * Copied from apache commons math3
+     * 
+     * @param v
+     * @return
+     */
+    public static double[] subtract(double a[], double b[]) {
+        final int dim = b.length;
+        double[] resultData = new double[dim];
+        for (int i = 0; i < dim; i++) {
+            resultData[i] = a[i] - b[i];
+        }
+        return resultData;
+    }
+
+    /**
+     * Copied from apache commons math3
+     * 
+     * @param a
+     * @param d
+     * @return
+     */
+    public static double[] mapMultiplyToSelf(double a[], double d) {
+        for (int i = 0; i < a.length; i++) {
+            a[i] *= d;
+        }
+        return a;
+    }
 
 }
