@@ -5,20 +5,23 @@ import net.sourceforge.argparse4j.inf.Namespace
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-
 import de.tu_berlin.impro3.core.Algorithm
 import net.sourceforge.argparse4j.inf.Subparser
 import net.sourceforge.argparse4j.inf.Namespace
+import org.apache.spark.rdd.RDD
+import org.apache.spark.api.java.JavaRDD
+import java.util.List
+
+object LinkageMode extends Enumeration {
+	type LinkageMode = Value
+	val SingleLinkage, CompleteLinkage = Value
+}
+import LinkageMode._
 
 object HAC {
   val KEY_ITERATIONS = "algorithm.hac.iterations"
 
   val KEY_LINKAGE = "algorithm.hac.linkage"
-
-  object LinkageMode extends Enumeration {
-	type LinkageMode = Value
-	val SingleLinkage, CompleteLinkage = Value
-  }
 
   class Command extends Algorithm.Command[HAC]("hac", "Hierarchical clustering", classOf[HAC]) {
 
@@ -39,7 +42,6 @@ object HAC {
     }
   }
 }
-import HAC.LinkageMode._
 
 /**
  * Spark HAC scala implementation.
@@ -56,12 +58,15 @@ class HAC(input: String, output: String, iterations: Int, linkage: LinkageMode) 
     val conf = new SparkConf().setAppName("HAC")
     val sc = new SparkContext(conf)
 
-    runProgramm(sc, input, output, iterations, linkage)
+    val documents = runProgramm(sc, input, iterations, linkage)
+    documents.saveAsTextFile(output)
   }
 
-  def runProgramm(sc: SparkContext, input: String, output: String, cluster: Int, linkage: LinkageMode) {
-    println("Running with " + input + ", " + output + " and " + cluster + " and " + linkage)
+  def runProgramm(sc: SparkContext): List[(Int, Int)] = {
+    runProgramm(sc, input, iterations, linkage).collect
+  }
 
+  def runProgramm(sc: SparkContext, input: String, cluster: Int, linkage: LinkageMode): JavaRDD[(Int, Int)] = {
     val similarityLinkageMethod = linkage match {
       case SingleLinkage => math.max(_: Long, _: Long) // minimal distance = maximal similarity
       case CompleteLinkage => math.min(_: Long, _: Long) // maximal distance = minimal similarity
@@ -98,20 +103,12 @@ class HAC(input: String, output: String, iterations: Int, linkage: LinkageMode) 
     }.reduceByKey(_ + _)
 
     // val iterations = (documents.count - cluster).toInt
-    println("Running " + iterations + " iterations.")
+    println("Initialization done. Running " + iterations + " iterations.")
 
     for (i <- 1 to Math.min(iterations, documents.count.toInt - 1)) {
-      // println("Running " + i + ". iteration...");
-
       // find cluster to merge
       val clusterToMerge = similarities.reduce(clusterToMergeSelector)
       val (removedClusterID, mergedClusterID) = clusterToMerge._1
-
-      // debug
-      // println("Merging cluster pair: " + clusterToMerge)
-      // Files.write(Paths.get(outputFilePrefix + ".iteration-" + i +".mergedCluster"), clusterToMerge.toString().getBytes())
-      // documents.saveAsTextFile(outputFilePrefix + ".iteration-" + i +".documents")
-      // similarities.saveAsTextFile(outputFilePrefix + ".iteration-" + i +".similarities")
 
       // update document clusters ids
       documents = documents.map {
@@ -142,6 +139,6 @@ class HAC(input: String, output: String, iterations: Int, linkage: LinkageMode) 
       }.reduceByKey(similarityLinkageMethod)
     }
 
-    documents.saveAsTextFile(output)
+    documents.toJavaRDD
   }
 }
