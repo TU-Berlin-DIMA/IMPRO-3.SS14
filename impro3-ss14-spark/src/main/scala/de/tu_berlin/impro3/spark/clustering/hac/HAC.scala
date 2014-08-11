@@ -1,22 +1,18 @@
 package de.tu_berlin.impro3.spark.clustering.hac
 
-import de.tu_berlin.impro3.core.Algorithm
-import net.sourceforge.argparse4j.inf.Namespace
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import de.tu_berlin.impro3.core.Algorithm
-import net.sourceforge.argparse4j.inf.Subparser
-import net.sourceforge.argparse4j.inf.Namespace
-import org.apache.spark.rdd.RDD
-import org.apache.spark.api.java.JavaRDD
 import java.util.List
+
+import de.tu_berlin.impro3.core.Algorithm
+import net.sourceforge.argparse4j.inf.{Namespace, Subparser}
+import org.apache.spark.SparkContext._
+import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.{SparkConf, SparkContext}
 
 object LinkageMode extends Enumeration {
 	type LinkageMode = Value
 	val SingleLinkage, CompleteLinkage = Value
 }
-import LinkageMode._
+import de.tu_berlin.impro3.spark.clustering.hac.LinkageMode._
 
 object HAC {
   val KEY_ITERATIONS = "algorithm.hac.iterations"

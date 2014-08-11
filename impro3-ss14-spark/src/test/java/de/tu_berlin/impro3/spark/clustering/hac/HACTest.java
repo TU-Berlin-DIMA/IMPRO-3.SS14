@@ -3,6 +3,8 @@ package de.tu_berlin.impro3.spark.clustering.hac;
 import java.io.File;
 import java.util.List;
 
+import de.tu_berlin.impro3.spark.clustering.hac.HAC;
+import de.tu_berlin.impro3.spark.clustering.hac.LinkageMode;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
