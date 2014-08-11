@@ -3,8 +3,6 @@ package de.tu_berlin.impro3.spark.clustering.hac;
 import java.io.File;
 import java.util.List;
 
-import de.tu_berlin.impro3.spark.clustering.hac.HAC;
-import de.tu_berlin.impro3.spark.clustering.hac.LinkageMode;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -30,7 +28,7 @@ public class HACTest {
             new int[] {6, 2, 3, 6, 6, 6}, // 3 iteration: 5 => 6
             new int[] {6, 2, 6, 6, 6, 6}, // 4 iteration: 3 => 6
             new int[] {6, 6, 6, 6, 6, 6} // 5 iteration: 2 => 6
-            };
+    };
 
     private final static int[][] RESULT_MINI_COMPLETE_LINKAGE = new int[][] {
             new int[] {1, 2, 3, 4, 5, 6}, // 0 iteration: doc id = cluster id
@@ -39,8 +37,8 @@ public class HACTest {
             new int[] {1, 6, 6, 6, 5, 6}, // 1 iteration: 3 => 6
             new int[] {6, 6, 6, 6, 5, 6}, // 1 iteration: 1 => 6
             new int[] {6, 6, 6, 6, 6, 6} // 1 iteration: 5 => 6
-            };
-	//@formatter:on
+    };
+    //@formatter:on
 
     private static JavaSparkContext sc;
 
