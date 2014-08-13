@@ -214,14 +214,15 @@
                     <executions>
                         <execution>
                             <id>scala-compile-first</id>
-                            <phase>compile</phase>
+                            <phase>process-resources</phase>
                             <goals>
+                                <goal>add-source</goal>
                                 <goal>compile</goal>
                             </goals>
                         </execution>
                         <execution>
                             <id>scala-test-compile</id>
-                            <phase>compile</phase>
+                            <phase>process-test-resources</phase>
                             <goals>
                                 <goal>testCompile</goal>
                             </goals>
@@ -323,7 +324,7 @@
 
     <modules>
         <module>impro3-ss14-core</module>
-        <!--module>impro3-ss14-scala</module-->
+        <!--<module>impro3-ss14-scala</module>-->
         <module>impro3-ss14-stratosphere</module>
         <module>impro3-ss14-spark</module>
     </modules>

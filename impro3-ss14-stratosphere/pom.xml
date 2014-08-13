@@ -45,6 +45,12 @@
                 <artifactId>maven-java-formatter-plugin</artifactId>
             </plugin>
 
+            <!-- Scala compilation -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+            </plugin>
+
             <!-- Shade Package (Create package with dependencies) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
